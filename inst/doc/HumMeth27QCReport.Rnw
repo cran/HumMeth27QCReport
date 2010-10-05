@@ -42,7 +42,7 @@ After starting R, the package should be loaded using the following.
 library(HumMeth27QCReport)
 @
 
-This will load \Rpackage{HumMeth27QCReport} as well as the \Rpackage{methylumi}, \Rpackage{amap}, \Rpackage{Hmisc}, \Rpackage{gplots}, \Rpackage{plotrix}, \Rpackage{WriteXLS} and \Rpackage{tcltk} packages and their dependencies.
+This will load \Rpackage{HumMeth27QCReport} as well as the \Rpackage{methylumi}, \Rpackage{lumi}, \Rpackage{amap}, \Rpackage{Hmisc}, \Rpackage{gplots}, \Rpackage{plotrix}, \Rpackage{WriteXLS} and \Rpackage{tcltk} packages and their dependencies.
 
 \begin{Sinput}
 R> HumMeth27QCReport(Dir)
@@ -179,7 +179,7 @@ HumMeth27QCReport creates as output different plots (saved in pdf files) to asse
 
 \setlength{\parskip}{10pt}
 
-The methods to normalize the data are described further in the \Rpackage{methylumi} package documentation.
+The methods to normalize the data are described further in the \Rpackage{lumi} package documentation.
 
 
 

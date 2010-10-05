@@ -378,12 +378,6 @@ cluster.samples.plot<-function(data,int.col=(1:ncol(data)),main.str="", method =
 #################################################
 ###############   Normalization   ###############
 
-# The function, normalizeMethyLumiSet does this normalization.
-# Basically, it looks at the median intensitiesin the methylated and unmethylated channels at very low and very high beta values and sets these medians equal. 
-# Using the transformed unmethylated and methylated values, new beta values are calculated using one of two "map" functions. 
-# The ratio function is the default and is the same as used by Illumina in the BeadStudio software, but values using the atan selection should be similar.
-####
-
 NormCheck <- function(Dir)   {
 
 dataFiles <- ImportData(Dir)
@@ -392,27 +386,29 @@ Ctrl <- dataFiles$Ctrl
 samps_mod <- dataFiles$samps_mod
 try(DiscarderII <- dataFiles$DiscarderII, silent=T)
 
-mldat <- methylumiR(AverageBeta, qcfile = Ctrl, sampleDescriptions = samps_mod)
-avgPval <- colMeans(pvals(mldat),na.rm = T)
-	
+lumiMethy <- lumiMethyR(AverageBeta, lib="IlluminaHumanMethylation27k.db")
+lumiMethy.c.adj <- lumiMethyC(lumiMethy)  #### color balance adjustment
+
+avgPval <- colMeans(detection(lumiMethy.c.adj),na.rm = T)
 toKeep <- (avgPval < 0.01)
 try(toKeep[as.character(DiscarderII$V1)]<-FALSE, silent=T)
 
-mldat.norm <- normalizeMethyLumiSet(mldat[,toKeep])
+lumiMethy.norm <- lumiMethyN(lumiMethy.c.adj[,toKeep], method="quantile")   #### quantile normalization based on colo balance adjustes data
 
 pdf(file="PCA.pdf",width=15,height=9)
 par(oma=c(1,1,1,1), mar=c(6.1,3.1,3.1,1.1))
-pca.samples.plot(as.data.frame(betas(mldat.norm)))
+pca.samples.plot(as.data.frame(exprs(lumiMethy.norm)))
 dev.off()
 
 pdf(file="Cluster.pdf",width=15,height=9)
-cluster.samples.plot(as.data.frame(betas(mldat.norm)),main="Hierarchical Clustering - Euclidean")
+cluster.samples.plot(as.data.frame(exprs(lumiMethy.norm)),main="Hierarchical Clustering - Euclidean")
 dev.off()
-return(list(mldat.norm=mldat.norm, toKeep=toKeep))
 
-NormBetasVal <- as.data.frame(betas(mldat.norm[toKeep,]))
+NormBetasVal <- as.data.frame(exprs(lumiMethy.norm[toKeep,]))
 WriteXLS("NormBetasVal", ExcelFileName = "QC_Analysis.xls", SheetNames = "Normalized Beta Values", 
 	verbose = FALSE, Encoding = c("UTF-8", "latin1"), perl = "perl",BoldHeaderRow=T)
+
+return(list(lumiMethy.norm=lumiMethy.norm, toKeep=toKeep))
 }
 
 
@@ -451,12 +447,12 @@ NoDetect005 <- dataQC$NoDetect005
 NoDetect001 <- dataQC$NoDetect001
 
 normVal <- NormCheck(Dir)
-mldat.norm <- normVal$mldat.norm
+lumiMethy.norm <- normVal$lumiMethy.norm
 toKeep <- normVal$toKeep
 
 #### Create the excel file with the summary 
 
-NormBetasVal <- as.data.frame(betas(mldat.norm[toKeep,]))
+NormBetasVal <- as.data.frame(exprs(lumiMethy.norm[toKeep,]))
 lenNormBetasVal <- length(NormBetasVal)
 NormBetasVal$TargetID <- rownames(NormBetasVal)
 NormBetasVal <- NormBetasVal[,c((lenNormBetasVal+1),1:lenNormBetasVal)]
