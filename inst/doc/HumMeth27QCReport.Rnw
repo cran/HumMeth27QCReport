@@ -1,0 +1,189 @@
+%\VignetteIndexEntry{HumMeth27QCReport: Methods for Generating Illumina Infinium HumanMethylation27 BeadChip QC Reports}
+%\VignettePackage{HumMeth27QCReport}
+
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage[authoryear,round]{natbib}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+
+
+\title{HumMeth27QCReport: A Package to Generate QC Reports for Infinium HumanMethylation27 BeadChip Methylation Assay Data}
+\author{Francesco M. Mancuso}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Introduction}
+
+This document describes an R package for generating QC reports.  The goal of this project is to create a tool to allow users of Illumina Infinium HumanMethylation27 BeadChip Methylation Assay\footnote{\url{www.illumina.com/}} to quickly access the data quality of a batch of processed arrays.  
+The package makes use of the  \Rpackage{methylumi} package for reading files exported from BeadStudio software, generating intensity plots and normalizing Beta values.     
+Several new plots are generated and a printable pdf files are created.  
+To run properly and generate the summary Excel file, the script needs that a working versions of Perl is installed on your machine.
+
+\section{Usage}
+
+After starting R, the package should be loaded using the following.
+
+<<echo=T,results=hide>>=
+library(HumMeth27QCReport)
+@
+
+This will load \Rpackage{HumMeth27QCReport} as well as the \Rpackage{methylumi}, \Rpackage{amap}, \Rpackage{Hmisc}, \Rpackage{gplots}, \Rpackage{plotrix}, \Rpackage{WriteXLS} and \Rpackage{tcltk} packages and their dependencies.
+
+\begin{Sinput}
+R> HumMeth27QCReport(Dir)
+\end{Sinput}
+
+Dir: character string containing the location of the directory in which the input file are.
+
+\setlength{\parskip}{25pt}
+
+If desired the analysis can be split in three parts by a single function call$:$
+
+\setlength{\parskip}{6pt}
+
+* \textbf{QCRep} creates all the histogram plots relative to the internal controls of the Illumina assay into pdf files.
+
+\begin{Sinput}
+R> QCRep(Dir)
+\end{Sinput}
+
+* \textbf{QCCheck} creates all the plots relatve to the quality of the samples.
+
+\begin{Sinput}
+R> QCCheck(Dir)
+\end{Sinput} 
+ 
+* \textbf{NormCheck} normalize the Beta Values and plot a PCA and a hierarchical Clustering of the samples using the noralized data
+
+\begin{Sinput}
+R> NormCheck(Dir)
+\end{Sinput}
+
+
+\section{Inputs and Outputs files}
+
+HumMeth27QCReport takes in input the three files from BeadStudio plus an optional text file with the chip control samples to discard from the normalization step:
+
+\setlength{\parskip}{6pt}
+
+* \textbf{Sample table} (it is compulsory that the file name contains the word "Sample", case sensitive, and not the others reserved words)
+
+\setlength{\parskip}{2pt}
+
+* \textbf{Control table} (it is compulsory that the file name contains the word "Control", case sensitive, and not the others reserved words)
+
+\setlength{\parskip}{2pt}
+
+* \textbf{BetaAverage table} (it is compulsory that the file name contains the word "Avg", case sensitive, and not the others reserved words)
+
+\setlength{\parskip}{2pt}
+
+* \textbf{Discard.txt} (compulsory name) 
+
+\setlength{\parskip}{10pt}
+
+\textbf{Sample table} - Required columns from BeadStudio:
+\\- Index
+\\- Sample ID
+\\- Sample Group
+\\- Sentrix Barcode	
+\\- Sample Section
+\\- Detected Genes (0.01)
+\\- Detected Genes (0.05)
+\\- Signal Average GRN
+\\- Signal Average RED
+\\- Signal P05 GRN
+\\- Signal P05 RED
+\\- Signal P25 GRN
+\\- Signal P25 RED
+\\- Signal P50 GRN
+\\- Signal P50 RED
+\\- Signal P75 GRN
+\\- Signal P75 RED
+\\- Signal P95 GRN
+\\- Signal P95 RED
+\\- Sample\_Well
+\\- Sample\_Plate
+
+\setlength{\parskip}{10pt}
+
+\textbf{Control table} - Required columns from BeadStudio (<Sn> = Sample Name):
+\\- Index
+\\- TargetID
+\\- ProbeID
+\\- <Sn>.Signal\_Grn
+\\- <Sn>.Signal\_Red
+\\- <Sn>.Detection Pval
+\\- ...
+
+\setlength{\parskip}{6pt}
+
+Required controls (rows):
+\setlength{\parskip}{3pt}
+\\    * BISULFITE CONVERSION (4 rows)
+\\    * EXTENSION (4 rows)
+\\    * HYBRIDIZATION (3 rows)
+\\    * NEGATIVE (16 rows)
+\\    * NON-POLYMORPHIC (4 rows)
+\\    * SPECIFICITY (4 rows)
+\\    * STAINING (4 rows)
+\\    * TARGET REMOVAL 
+
+\setlength{\parskip}{10pt}
+
+\textbf{AverageBeta table} - Required columns from BeadStudio (<Sn> = Sample Name):
+\\ - Index
+\\ - TargetID
+\\ - <Sn>.AVG\_Beta
+\\ - <Sn>.Intensity
+\\ - <Sn>.Signal\_A
+\\ - <Sn>.Signal\_B
+\\ - <Sn>.BEAD\_STDERR\_A
+\\ - <Sn>.BEAD\_STDERR\_B
+\\ - <Sn>.Avg\_NBEADS\_A
+\\ - <Sn>.Avg\_NBEADS\_B
+\\ - <Sn>.Detection Pval
+\\ - ...
+\\ - SYMBOL
+
+\setlength{\parskip}{10pt}
+
+\textbf{Discard.txt}
+Text file that contains the name of the samples (the same name present in the Sample table; one sample per row) you want to discard from normalization. i.e. sample controls to see if chip worked properly like un-methylated samples. 
+
+\setlength{\parskip}{25pt}
+
+HumMeth27QCReport creates as output different plots (saved in pdf files) to asses the quality of the samples:
+\\ - a histogram foreach internal control.
+\\ - an Intensity Graph plot foreach sample recalling the "plotSampleIntensities" function of methylumi package.
+\\ - a histogram with the percentage of non dectected CPG (that is the CPGs tha have a detection p-value bigger than 0.05 or 0.01.
+\\ - a histogram with the average p-value for each sample.
+\\ - a PCA of normalized Beta values
+\\ - a Cluster of normalized Beta values
+\\As ulterior output, an Excel file is provided. It contains the normalized BetaValues, a summary of the Internal Controls and of the gene detection and different lists of non-detected CPGs.
+
+\setlength{\parskip}{10pt}
+
+The methods to normalize the data are described further in the \Rpackage{methylumi} package documentation.
+
+
+
+\section{Acknowledgments}
+I would like to thanks Manuela Hummel for the technical support.
+
+\end{document}

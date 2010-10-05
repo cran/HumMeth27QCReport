@@ -1,0 +1,11 @@
+import(methylumi)
+import(amap)
+import(Hmisc)
+import(gplots)
+import(WriteXLS)
+import(tcltk)
+
+export(HumMeth27QCReport)
+export(NormCheck)
+export(QCCheck)
+export(QCRep)
