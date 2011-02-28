@@ -1,4 +1,4 @@
- #### HumMeth27QCReport v. 1.2.10
+ #### HumMeth27QCReport v. 1.2.12
 
 
 ###############################################
@@ -33,7 +33,7 @@ ImportData <- function(Dir) {
 	
   pdf(file="Sample.pdf",width=15,height=9, fonts="Times")  
   if((nsample %% 2 == 0) ==F) {
-    SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2+1)], as.character(samps2$SampleID[1:(length(samps2$SampleID)/2+1)]), rep(" ",(length(samps2$SampleID)/2)+1), c(round((length(samps2$Index)/2)+2):(length(samps2$Index)),""), c(as.character(samps2$SampleID[((length(samps2$SampleID)/2)+1):length(samps2$SampleID)]), ""))
+    SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2+1)], as.character(samps2$SampleID[1:(length(samps2$SampleID)/2+1)]), rep(" ",(length(samps2$SampleID)/2)+1), c(round((length(samps2$Index)/2)+1):(length(samps2$Index)),""), c(as.character(samps2$SampleID[((round(length(samps2$SampleID)/2+1))):length(samps2$SampleID)]),""))
     colnames(SamplePDF)<-c("Index","SampleID","","Index","SampleID")
     }
   if ((nsample %% 2 == 0) ==T) {
@@ -81,7 +81,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	DNP <- DNP[with(DNP, order(SAMPLE)), ]
 	
 	if (max(DNP[,2])>50)   { 
-		try(gap.barplot(DNP[,2], gap=c(51,55), col=rep("red",length(DNP[,2])), xaxlab=DNP$SAMPLE,main="Staining DNP Control: Background (BGND) on Signal (MED)",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		try(gap.barplot(DNP[,2], gap=c(50.0001,50.001), col=rep("red",length(DNP[,2])), xaxlab=DNP$SAMPLE,main="Staining DNP Control: Background (BGND) on Signal (MED)",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")	
 	}   else   {
 		barplot2(DNP[,2], col="red", names=DNP$SAMPLE, las=2, ylim=c(0,50), main="Staining DNP Control: Background (BGND) on Signal (MED)", ylab="%")
@@ -100,8 +100,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	Biotin <- Biotin[with(Biotin, order(SAMPLE)), ]
 	
 	if (max(Biotin[,2])>50)   { 
-		try(gap.barplot(Biotin[,2], gap=c(51,55), col=rep("green",length(Biotin[,2])), xaxlab=Biotin$SAMPLE,main="Staining Biotin Control: Background (BGND) on Signal (MED)",las=2,ylim=c(4,61), ylab="%", 
-						ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		try(gap.barplot(Biotin[,2], gap=c(50.0001,50.001), col=rep("green",length(Biotin[,2])), xaxlab=Biotin$SAMPLE,main="Staining Biotin Control: Background (BGND) on Signal (MED)",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")	
 	}   else   {
 		barplot2(Biotin[,2], col="green", names=Biotin$SAMPLE, las=2, ylim=c(0,50), main="Staining Biotin Control: Background (BGND) on Signal (MED)", ylab="%")
@@ -128,9 +127,9 @@ getAssayControls <- function(ImportDataR,platform) {
 	Hyb <- Hyb[with(Hyb, order(SAMPLE)), ]
 	HybMax <- apply(as.matrix(t(data.frame("L"=Hyb[,2],"M"=Hyb[,3],"H"=Hyb[,4]))),1,max)
 	
+ 
 	if (max(HybMax)>50)   { 
-		barplot2(as.matrix(t(data.frame("L"=Hyb[,2],"M"=Hyb[,3],"H"=Hyb[,4]))), names=Hyb$SAMPLE, ylim=c(0,100),ylab="%",
-			 col=c(1,2,3), las=2, beside=T, legend = c("HybL","HybM","HybH"), main="Hibridization Control: Background (Red) on Signal (Green)", plot.grid = TRUE, grid.lty = "solid",grid.col = "grey")
+		barplot2(as.matrix(t(data.frame("L"=Hyb[,2],"M"=Hyb[,3],"H"=Hyb[,4]))), names=Hyb$SAMPLE, ylim=c(0,max(HybMax)+50),ylab="%", col=c(1,2,3), las=2, beside=T, legend = c("HybL","HybM","HybH"), main="Hibridization Control: Background (Red) on Signal (Green)", plot.grid = TRUE, grid.lty = "solid",grid.col = "grey")
 	}   else   {
 		barplot2(as.matrix(t(data.frame("L"=Hyb[,2],"M"=Hyb[,3],"H"=Hyb[,4]))), names=Hyb$SAMPLE, ylim=c(0,50),ylab="%",
 				 col=c(1,2,3), las=2, beside=T, legend = c("HybL","HybM","HybH"), main="Hibridization Control: Background (Red) on Signal (Green)", plot.grid = TRUE, grid.lty = "solid",grid.col = "grey")
@@ -177,15 +176,15 @@ getAssayControls <- function(ImportDataR,platform) {
 	ExtRatio.r <- ExtRatio.r[with(ExtRatio.r, order(SAMPLE)), ]
 	
 	if (max(ExtRatio.g[,2])>50)   { 
-		try(gap.barplot(ExtRatio.g[,2], gap=c(51,55), col=rep("green",length(ExtRatio.g[,2])), xaxlab=ExtRatio.g$SAMPLE,main="Extension Control (green channel): Background (AT) on Signal (GC)",las=2, ylab="%", ylim=c(4,61), ytics=c(seq(0,60,10)),xlab=""), silent=T)
-		abline(h=seq(5,50,10),col="grey") 
+		try(gap.barplot(ExtRatio.g[,2], gap=c(50.0001,50.001), col=rep("green",length(ExtRatio.g[,2])), xaxlab=ExtRatio.g$SAMPLE,main="Extension Control (green channel): Background (AT) on Signal (GC)",las=2, ylab="%", ylim=c(4,61), ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		abline(h=seq(0,50,10),col="grey") 
 	}   else   {
 		barplot2(ExtRatio.g[,2], col="green", names=ExtRatio.g$SAMPLE, las=2, ylim=c(0,50), main="Extension Control (green channel): Background (AT) on Signal (GC)", ylab="%")
 		abline(h=seq(0,50,5),col="grey")
 	}
 	
 	if (max(ExtRatio.r[,2])>50)   { 
-		try(gap.barplot(ExtRatio.r[,2], gap=c(51,55), col=rep("red",length(ExtRatio.r[,2])), xaxlab=ExtRatio.r$SAMPLE,main="Extension control (red channel): Background (GC) on Signal (AT)",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		try(gap.barplot(ExtRatio.r[,2], gap=c(50.0001,50.001), col=rep("red",length(ExtRatio.r[,2])), xaxlab=ExtRatio.r$SAMPLE,main="Extension control (red channel): Background (GC) on Signal (AT)",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
 		barplot2(ExtRatio.r[,2], col="red", names=ExtRatio.r$SAMPLE, las=2, ylim=c(0,50), main="Extension Control (red channel): Background (AT) on Signal (GC)", ylab="%")
@@ -211,7 +210,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	BisulfiteG <- BisulfiteG[with(BisulfiteG, order(SAMPLE)), ]
 	
 	if (max(BisulfiteG[,2])>50)   { 
-		gap.barplot(BisulfiteG[,2], gap=c(51,55), col=rep("green",length(BisulfiteG[,2])), xaxlab=BisulfiteG$SAMPLE,
+		gap.barplot(BisulfiteG[,2], gap=c(50.0001,50.001), col=rep("green",length(BisulfiteG[,2])), xaxlab=BisulfiteG$SAMPLE,
 					main="Bisulfite Control (green channel): Background (U) on Signal (C)",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(4,61)) 
 		abline(h=seq(0,50,5),col="grey") 
 	}   else   {
@@ -232,8 +231,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	BisulfiteR <- BisulfiteR[with(BisulfiteR, order(SAMPLE)), ]
 	
 	if (max(BisulfiteR[,2])>50)   { 
-		gap.barplot(BisulfiteR[,2], gap=c(51,55), col=rep("red",length(BisulfiteR[,2])), xaxlab=BisulfiteR$SAMPLE,
-					main="Bisulfite Control (red channel): Background (U) on Signal (C)",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(4,61)) 
+		gap.barplot(BisulfiteR[,2], gap=c(50.0001,50.001), col=rep("red",length(BisulfiteR[,2])), xaxlab=BisulfiteR$SAMPLE,	main="Bisulfite Control (red channel): Background (U) on Signal (C)",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(4,61)) 
 		abline(h=seq(0,50,5),col="grey") 
 	}   else   {
 		barplot2(BisulfiteR[,2], col="red", names=BisulfiteG$SAMPLE, las=2, ylim=c(0,50), main="Bisulfite Control (red channel): Background (U) on Signal (C)", ylab="%")
@@ -252,7 +250,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	BisIIC <- BisIIC[with(BisIIC, order(SAMPLE)), ]
 	
   if (max(BisIIC[,2])>50)   { 
-		gap.barplot(BisIIC[,2], gap=c(51,55), col=rep("red",length(BisIIC[,2])), xaxlab=BisIIC$SAMPLE,
+		gap.barplot(BisIIC[,2], gap=c(50.0001,50.001), col=rep("red",length(BisIIC[,2])), xaxlab=BisIIC$SAMPLE,
 					main="Bisulfite II Control: Background on Signal",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(4,61)) 
 		abline(h=seq(0,50,5),col="grey") 
 	}   else   {
@@ -282,7 +280,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	Spec_mm1 <- Spec_mm1[with(Spec_mm1, order(SAMPLE)), ]
 	
 	if (max(Spec_mm1[,2])>50)   { 
-		try(gap.barplot(Spec_mm1[,2], gap=c(51,55), col=rep("red",length(Spec_mm1[,2])), xaxlab=Spec_mm1$SAMPLE,main="Specificity Control mismatch 1: Background (MM) on Signal (PM)",
+		try(gap.barplot(Spec_mm1[,2], gap=c(50.0001,50.001), col=rep("red",length(Spec_mm1[,2])), xaxlab=Spec_mm1$SAMPLE,main="Specificity Control mismatch 1: Background (MM) on Signal (PM)",
 						las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
@@ -301,7 +299,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	Spec_mm2 <- Spec_mm2[with(Spec_mm2, order(SAMPLE)), ]
 	
 	if (max(Spec_mm2[,2])>50)   { 
-		try(gap.barplot(Spec_mm2[,2], gap=c(51,55), col=rep("green",length(Spec_mm2[,2])), xaxlab=Spec_mm2$SAMPLE,main="Specificity Control mismatch 2: Background (MM) on Signal (PM)",
+		try(gap.barplot(Spec_mm2[,2], gap=c(50.0001,50.001), col=rep("green",length(Spec_mm2[,2])), xaxlab=Spec_mm2$SAMPLE,main="Specificity Control mismatch 2: Background (MM) on Signal (PM)",
 						las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
@@ -323,7 +321,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	SpecIIC <- SpecIIC[with(SpecIIC, order(SAMPLE)), ]
 	
   if (max(SpecIIC[,2])>50)   { 
-		try(gap.barplot(SpecIIC[,2], gap=c(51,55), col=rep("red",length(SpecIIC[,2])), xaxlab=SpecIIC$SAMPLE,main="Specificity Control II: Background on Signal",
+		try(gap.barplot(SpecIIC[,2], gap=c(50.0001,50.001), col=rep("red",length(SpecIIC[,2])), xaxlab=SpecIIC$SAMPLE,main="Specificity Control II: Background on Signal",
 						las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
@@ -370,7 +368,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	NPRatio.r <- NPRatio.r[with(NPRatio.r, order(SAMPLE)), ]
 	
 	if (max(NPRatio.g[,2]) > 50)   { 
-		try(gap.barplot(NPRatio.g[,2], gap=c(51,55), col=rep("green",length(NPRatio.g[,2])), xaxlab=NPRatio.g$SAMPLE,
+		try(gap.barplot(NPRatio.g[,2], gap=c(50.0001,50.001), col=rep("green",length(NPRatio.g[,2])), xaxlab=NPRatio.g$SAMPLE,
 						main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Green Channel",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,5),col="grey")
 	}   else   { 
@@ -379,8 +377,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	}
 	
 	if (max(NPRatio.r[,2]) > 50)   { 
-		try(gap.barplot(NPRatio.r[,2], gap=c(51,55), col=rep("red",length(NPRatio.r[,2])), xaxlab=NPRatio.r$SAMPLE,
-						main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Red Channel",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		try(gap.barplot(NPRatio.r[,2], gap=c(50.0001,50.001), col=rep("red",length(NPRatio.r[,2])), xaxlab=NPRatio.r$SAMPLE, main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Red Channel",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,5),col="grey")
 	} else   {
 		barplot2(NPRatio.r[,2], col="red", names=NPRatio.r$SAMPLE, las=2, ylim=c(0,50), main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Red Channel", ylab="%")
@@ -391,22 +388,11 @@ getAssayControls <- function(ImportDataR,platform) {
 	
 	samps <- samps[with(samps, order(SampleID)), ]
 	if (platform == "Hum27")   {
-		infotab_intC <- data.frame("Index"=samps$Index, "Sample ID"= samps$SampleID, "Sample Group" = samps$Sample.Group, "Sentrix Barcode"=samps$Sentrix.Barcode,
-								   "Sample Section"=samps$Sample.Section, "Sample_Plate"=samps$Sample_Plate, "Sample_Well"=samps$Sample_Well,
-								   "DNP staining" = round(DNP[,2],1), "Biotin staining" = round(Biotin[,2],1),"Low Hybridization Control" = round(Hyb[,2],1),"Medium Hybridization Control" = round(Hyb[,3],1), 
-								   "High Hybridization Control" = round(Hyb[,4],1), "Target Removal Control" = round(TMmeanC[,2],1),"Extension.Control.Green" = round(ExtRatio.g[,2],1),"Extension.Control.Red" = round(ExtRatio.r[,2],1),
-								   "Bisulfite Conversion Control" = round(BisulfiteG[,2],1), "Specificity mismatch 1" = round(Spec_mm1[,2],1), "Specificity mismatch 2" = round(Spec_mm2[,2],1), "Negative Control" = round(NegC[,2],1),
-								   "Non.Polymorphic.Green" = round(NPRatio.g[,2],1),"Non.Polymorphic.Red" = round(NPRatio.r[,2],1))
+		infotab_intC <- data.frame("Index"=samps$Index, "Sample ID"= samps$SampleID, "Sample Group" = samps$Sample.Group, "Sentrix Barcode"=samps$Sentrix.Barcode, "Sample Section"=samps$Sample.Section, "Sample_Plate"=samps$Sample_Plate, "Sample_Well"=samps$Sample_Well, "DNP staining" = round(DNP[,2],1), "Biotin staining" = round(Biotin[,2],1),"Low Hybridization Control" = round(Hyb[,2],1),"Medium Hybridization Control" = round(Hyb[,3],1), "High Hybridization Control" = round(Hyb[,4],1), "Target Removal Control" = round(TMmeanC[,2],1),"Extension.Control.Green" = round(ExtRatio.g[,2],1),"Extension.Control.Red" = round(ExtRatio.r[,2],1), "Bisulfite Conversion Control" = round(BisulfiteG[,2],1), "Specificity mismatch 1" = round(Spec_mm1[,2],1), "Specificity mismatch 2" = round(Spec_mm2[,2],1), "Negative Control" = round(NegC[,2],1), "Non.Polymorphic.Green" = round(NPRatio.g[,2],1),"Non.Polymorphic.Red" = round(NPRatio.r[,2],1))
 	}
 	
 	if (platform == "Hum450")   {
-		infotab_intC <- data.frame("Index"=samps$Index, "Sample ID"= samps$SampleID, "Sample Group" = samps$Sample.Group, "Sentrix Barcode"=samps$Sentrix.Barcode,
-								   "Sample Section"=samps$Sample.Section, "Sample_Plate"=samps$Sample_Plate, "Sample_Well"=samps$Sample_Well,
-								   "DNP staining" = round(DNP[,2],1), "Biotin staining" = round(Biotin[,2],1),"Low Hybridization Control" = round(Hyb[,2],1),"Medium Hybridization Control" = round(Hyb[,3],1), 
-								   "High Hybridization Control" = round(Hyb[,4],1), "Target Removal Control" = round(TMmeanC[,2],1),"Extension.Control.Green" = round(ExtRatio.g[,2],1),"Extension.Control.Red" = round(ExtRatio.r[,2],1),
-								   "Bisulfite Conversion Control Green" = round(BisulfiteG[,2],1), "Bisulfite Conversion Control Red" = round(BisulfiteR[,2],1), "Bisulfite Conversion II" = round(BisIIC[,2],1),
-								   "Specificity mismatch 1" = round(Spec_mm1[,2],1), "Specificity mismatch 2" = round(Spec_mm2[,2],1), "Specificity II" = round(SpecIIC[,2],1),
-								   "Negative Control" = round(NegC[,2],1), "Non.Polymorphic.Green" = round(NPRatio.g[,2],1), "Non.Polymorphic.Red" = round(NPRatio.r[,2],1))
+		infotab_intC <- data.frame("Index"=samps$Index, "Sample ID"= samps$SampleID, "Sample Group" = samps$Sample.Group, "Sentrix Barcode"=samps$Sentrix.Barcode, "Sample Section"=samps$Sample.Section, "Sample_Plate"=samps$Sample_Plate, "Sample_Well"=samps$Sample_Well,"DNP staining" = round(DNP[,2],1), "Biotin staining" = round(Biotin[,2],1),"Low Hybridization Control" = round(Hyb[,2],1),"Medium Hybridization Control" = round(Hyb[,3],1), "High Hybridization Control" = round(Hyb[,4],1), "Target Removal Control" = round(TMmeanC[,2],1),"Extension.Control.Green" = round(ExtRatio.g[,2],1),"Extension.Control.Red" = round(ExtRatio.r[,2],1), "Bisulfite Conversion Control Green" = round(BisulfiteG[,2],1), "Bisulfite Conversion Control Red" = round(BisulfiteR[,2],1), "Bisulfite Conversion II" = round(BisIIC[,2],1), "Specificity mismatch 1" = round(Spec_mm1[,2],1), "Specificity mismatch 2" = round(Spec_mm2[,2],1), "Specificity II" = round(SpecIIC[,2],1), "Negative Control" = round(NegC[,2],1), "Non.Polymorphic.Green" = round(NPRatio.g[,2],1), "Non.Polymorphic.Red" = round(NPRatio.r[,2],1))
 	}
 	
 	infotab_intC <- infotab_intC[with(infotab_intC, order(Index)), ]
@@ -434,14 +420,19 @@ QCCheck <- function(ImportDataR, pval)   {
 	pdf(file="QualityCheck.pdf",width=15,height=9)
 	
 ##### Intensity Graphs
-	intNumber <- round(nsample / 12,0);
+  if((nsample %% 2 == 0) ==F) {
+    intNumber <- ceiling(nsample / 12)
+    }	
+  if((nsample %% 2 == 0) ==T) {
+    intNumber <- round(nsample / 12,0)
+    }
 	for (k in 0:(intNumber-1))   {
 		fileN <- paste("int",k+1,".pdf", sep = "", collapse = NULL)
 
 		par(mfrow=c(4,3),oma=c(0.1,0.1,0.1,0.1), mar=c(8.1,2.1,2.1,2.1))
 		for(i in ((1+12*k):(12*(k+1))))   { 
-			try(plotSampleIntensities(mldat,s=i), silent=T)      
-		}
+			try(plotSampleIntensities(mldat, s=i), silent=T)
+    }
 	}
 
 	
@@ -464,7 +455,7 @@ QCCheck <- function(ImportDataR, pval)   {
 	par(mfrow=c(1,1),oma=c(1,1,1,1), mar=c(10.1,4.1,3.1,1.1))
 	barplot2(rbind(as.numeric(NoDetectedAll[,2]),as.numeric(NoDetectedAll[,3])),beside=T, las = 2, 
 			 col= c("blue","red"), names=NoDetectedAll$SampleID, axes=T, main="Percentage of non detected genes", ylab="%", 
-			 ylim=c(0, 100), legend=c("% Not detected Genes (0.05)","% Not detected Genes (0.01)"), plot.grid = TRUE, grid.lty = "solid",grid.col = "grey")
+			 ylim=c(0, 100), legend=c("% Not detected Genes (0.01)","% Not detected Genes (0.05)"), plot.grid = TRUE, grid.lty = "solid",grid.col = "grey")
 
 
 #### Average P-value
@@ -505,14 +496,14 @@ pca.samples.plot<-function(data,int.col=(1:ncol(data)),main.str="Principal Compo
 {
     data.nona<-na.delete(data[,int.col])
     pca.res<-prcomp(t(data.nona),tol=0.1,na.action=na.omit,center=T,scale=T)
-    plot(pca.res$x,xlab="PC 1",ylab="PC 2",main=main.str,pch=".")
+    plot(pca.res$x,xlim=c(-200,200),xlab="PC 1",ylab="PC 2",main=main.str,pch=".")
     text(pca.res$x,colnames(data[,int.col]),cex=0.7)
 }
 
 ################################################
 ############### Cluster Analysis ###############
 
-cluster.samples.plot<-function(data,int.col=(1:ncol(data)),main.str="", method = "")
+cluster.samples.plot<-function(data,int.col=(1:ncol(data)), main.str="", method = "")
 {
 	# Matrix reprensentation of hierarchical clustering of the samples
     
@@ -584,7 +575,7 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 	pdf(file="ExplorativeAnalysis.pdf",width=15,height=9)
 	par(oma=c(1,1,1,1), mar=c(7.1,4.1,3.1,1.1))
 	pca.samples.plot(lumiMethy.norm.f)
-	cluster.samples.plot(lumiMethy.norm.f,main="Hierarchical Clustering",method=ClustMethod)
+	cluster.samples.plot(lumiMethy.norm.f,main.str="Hierarchical Clustering",method=ClustMethod)
 	dev.off()
 	
 	NormBetasVal <- as.data.frame(exprs(lumiMethy.norm[toKeep,]))

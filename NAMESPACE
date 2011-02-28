@@ -1,14 +1,15 @@
-import(methylumi)
+import(Hmisc)
 importFrom(lumi,"lumiMethyR","lumiMethyC","lumiMethyN")
+importMethodsFrom(lumi,"summary") 
+importFrom(methylumi,"methylumiR","plotSampleIntensities")
 import(IlluminaHumanMethylation27k.db)
 import(IlluminaHumanMethylation450k.db)
 importMethodsFrom(AnnotationDbi, mget)
 import(amap)
-import(Hmisc)
 import(gplots)
 import(WriteXLS)
 import(tcltk2)
 
 export(ImportData,HumMeth27QCReport,NormCheck,QCCheck,getAssayControls)
 exportMethods("betas","pvals","exprs","hist","boxplot","pairs","[",
-              "pvals<-","betas<-","corplot")
+              "pvals<-","betas<-","corplot", "summary")

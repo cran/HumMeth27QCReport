@@ -10,7 +10,7 @@ getAssayControls(ImportDataR, platform)
 \arguments{
 	\item{ImportDataR}{the object that comes from ImportData function}
     \item{platform}{The type of Illumina Infinium BeadChip methylation assay. 
-		This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip).}
+		This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip)}
 }
 
 

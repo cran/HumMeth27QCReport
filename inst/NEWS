@@ -1,3 +1,7 @@
+version 1.2.12
+Solved different issues: odd samples, graph color in QCCheck
+Date: 01/11/2011 
+-----------------------------------------------------
 version 1.2.11
 Solved graphical issues when bad samples
 Date: 20/09/2011 
