@@ -1,3 +1,7 @@
+version 1.2.11
+Solved graphical issues when bad samples
+Date: 20/09/2011 
+-----------------------------------------------------
 version 1.2.10
 Modified the plots for Bisulfite II and Specificity II controls
 Date: 06/06/2011 

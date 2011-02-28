@@ -31,10 +31,16 @@ ImportData <- function(Dir) {
 	nsample <- length(samps$Index)
 	samps2 <- samps[with(samps, order(Index)), ]
 	
-	pdf(file="Sample.pdf",width=15,height=9, fonts="Times")
-	SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2)], samps2$SampleID[1:(length(samps2$SampleID)/2)],rep(" ",(length(samps2$SampleID)/2)), 
-							samps2$Index[((length(samps2$Index)/2)+1):length(samps2$Index)], samps2$SampleID[((length(samps2$SampleID)/2)+1):length(samps2$SampleID)])
+  pdf(file="Sample.pdf",width=15,height=9, fonts="Times")  
+  if((nsample %% 2 == 0) ==F) {
+    SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2+1)], as.character(samps2$SampleID[1:(length(samps2$SampleID)/2+1)]), rep(" ",(length(samps2$SampleID)/2)+1), c(round((length(samps2$Index)/2)+2):(length(samps2$Index)),""), c(as.character(samps2$SampleID[((length(samps2$SampleID)/2)+1):length(samps2$SampleID)]), ""))
+    colnames(SamplePDF)<-c("Index","SampleID","","Index","SampleID")
+    }
+  if ((nsample %% 2 == 0) ==T) {
+	  SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2)], samps2$SampleID[1:(length(samps2$SampleID)/2)], rep(" ",(length(samps2$SampleID)/2)), samps2$Index[((length(samps2$Index)/2)+1):length(samps2$Index)], samps2$SampleID[((length(samps2$SampleID)/2)+1):length(samps2$SampleID)])
 	colnames(SamplePDF)<-c("Index","SampleID","","Index","SampleID")
+  } 
+ 
 	textplot(SamplePDF, halign="center", valign="center", show.rownames = F)
 	title("Sample List")
 	dev.off()
@@ -75,8 +81,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	DNP <- DNP[with(DNP, order(SAMPLE)), ]
 	
 	if (max(DNP[,2])>50)   { 
-		try(gap.barplot(DNP[,2], gap=c(51,55), col=rep("red",length(DNP[,2])), xaxlab=DNP$SAMPLE,main="Staining DNP Control: Background (BGND) on Signal (MED)",las=2,ylim=c(0,65), ylab="%", 
-						ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		try(gap.barplot(DNP[,2], gap=c(51,55), col=rep("red",length(DNP[,2])), xaxlab=DNP$SAMPLE,main="Staining DNP Control: Background (BGND) on Signal (MED)",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")	
 	}   else   {
 		barplot2(DNP[,2], col="red", names=DNP$SAMPLE, las=2, ylim=c(0,50), main="Staining DNP Control: Background (BGND) on Signal (MED)", ylab="%")
@@ -95,7 +100,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	Biotin <- Biotin[with(Biotin, order(SAMPLE)), ]
 	
 	if (max(Biotin[,2])>50)   { 
-		try(gap.barplot(Biotin[,2], gap=c(51,55), col=rep("green",length(Biotin[,2])), xaxlab=Biotin$SAMPLE,main="Staining Biotin Control: Background (BGND) on Signal (MED)",las=2,ylim=c(0,65), ylab="%", 
+		try(gap.barplot(Biotin[,2], gap=c(51,55), col=rep("green",length(Biotin[,2])), xaxlab=Biotin$SAMPLE,main="Staining Biotin Control: Background (BGND) on Signal (MED)",las=2,ylim=c(4,61), ylab="%", 
 						ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")	
 	}   else   {
@@ -172,15 +177,15 @@ getAssayControls <- function(ImportDataR,platform) {
 	ExtRatio.r <- ExtRatio.r[with(ExtRatio.r, order(SAMPLE)), ]
 	
 	if (max(ExtRatio.g[,2])>50)   { 
-		try(gap.barplot(ExtRatio.g, gap=c(51,55), col=rep("green",length(ExtRatio.g)), xaxlab=Extension.AT.g$Sample,main="Extension Control (green channel): Background (AT) on Signal (GC)",las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
-		abline(h=seq(0,50,10),col="grey") 
+		try(gap.barplot(ExtRatio.g[,2], gap=c(51,55), col=rep("green",length(ExtRatio.g[,2])), xaxlab=ExtRatio.g$SAMPLE,main="Extension Control (green channel): Background (AT) on Signal (GC)",las=2, ylab="%", ylim=c(4,61), ytics=c(seq(0,60,10)),xlab=""), silent=T)
+		abline(h=seq(5,50,10),col="grey") 
 	}   else   {
 		barplot2(ExtRatio.g[,2], col="green", names=ExtRatio.g$SAMPLE, las=2, ylim=c(0,50), main="Extension Control (green channel): Background (AT) on Signal (GC)", ylab="%")
 		abline(h=seq(0,50,5),col="grey")
 	}
 	
 	if (max(ExtRatio.r[,2])>50)   { 
-		try(gap.barplot(ExtRatio.r, gap=c(51,55), col=rep("red",length(ExtRatio.r)), xaxlab=Extension.AT.r$Sample,main="Extension control (red channel): Background (GC) on Signal (AT)",las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		try(gap.barplot(ExtRatio.r[,2], gap=c(51,55), col=rep("red",length(ExtRatio.r[,2])), xaxlab=ExtRatio.r$SAMPLE,main="Extension control (red channel): Background (GC) on Signal (AT)",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
 		barplot2(ExtRatio.r[,2], col="red", names=ExtRatio.r$SAMPLE, las=2, ylim=c(0,50), main="Extension Control (red channel): Background (AT) on Signal (GC)", ylab="%")
@@ -207,7 +212,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
 	if (max(BisulfiteG[,2])>50)   { 
 		gap.barplot(BisulfiteG[,2], gap=c(51,55), col=rep("green",length(BisulfiteG[,2])), xaxlab=BisulfiteG$SAMPLE,
-					main="Bisulfite Control (green channel): Background (U) on Signal (C)",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(0,65)) 
+					main="Bisulfite Control (green channel): Background (U) on Signal (C)",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(4,61)) 
 		abline(h=seq(0,50,5),col="grey") 
 	}   else   {
 		barplot2(BisulfiteG[,2], col="green", names=BisulfiteG$SAMPLE, las=2, ylim=c(0,50), main="Bisulfite Control (green channel): Background (U) on Signal (C)", ylab="%")
@@ -228,7 +233,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
 	if (max(BisulfiteR[,2])>50)   { 
 		gap.barplot(BisulfiteR[,2], gap=c(51,55), col=rep("red",length(BisulfiteR[,2])), xaxlab=BisulfiteR$SAMPLE,
-					main="Bisulfite Control (red channel): Background (U) on Signal (C)",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(0,65)) 
+					main="Bisulfite Control (red channel): Background (U) on Signal (C)",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(4,61)) 
 		abline(h=seq(0,50,5),col="grey") 
 	}   else   {
 		barplot2(BisulfiteR[,2], col="red", names=BisulfiteG$SAMPLE, las=2, ylim=c(0,50), main="Bisulfite Control (red channel): Background (U) on Signal (C)", ylab="%")
@@ -248,7 +253,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
   if (max(BisIIC[,2])>50)   { 
 		gap.barplot(BisIIC[,2], gap=c(51,55), col=rep("red",length(BisIIC[,2])), xaxlab=BisIIC$SAMPLE,
-					main="Bisulfite II Control: Background on Signal",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(0,65)) 
+					main="Bisulfite II Control: Background on Signal",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(4,61)) 
 		abline(h=seq(0,50,5),col="grey") 
 	}   else   {
 		barplot2(BisIIC[,2], col="red", names=BisIIC$SAMPLE, las=2, ylim=c(0,50), main="Bisulfite II Control: Background on Signal", ylab="%")
@@ -278,7 +283,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
 	if (max(Spec_mm1[,2])>50)   { 
 		try(gap.barplot(Spec_mm1[,2], gap=c(51,55), col=rep("red",length(Spec_mm1[,2])), xaxlab=Spec_mm1$SAMPLE,main="Specificity Control mismatch 1: Background (MM) on Signal (PM)",
-						las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+						las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
 		barplot2(Spec_mm1[,2], col="red", names=Spec_mm1$SAMPLE, las=2, ylim=c(0,50), main="Specificity Control mismatch 1: Background (MM) on Signal (PM)", ylab="%")
@@ -297,7 +302,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
 	if (max(Spec_mm2[,2])>50)   { 
 		try(gap.barplot(Spec_mm2[,2], gap=c(51,55), col=rep("green",length(Spec_mm2[,2])), xaxlab=Spec_mm2$SAMPLE,main="Specificity Control mismatch 2: Background (MM) on Signal (PM)",
-						las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+						las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
 		barplot2(Spec_mm2[,2], col="green", names=Spec_mm2$SAMPLE, las=2, ylim=c(0,50), main="Specificity Control mismatch 2: Background (MM) on Signal (PM)", ylab="%")
@@ -319,7 +324,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
   if (max(SpecIIC[,2])>50)   { 
 		try(gap.barplot(SpecIIC[,2], gap=c(51,55), col=rep("red",length(SpecIIC[,2])), xaxlab=SpecIIC$SAMPLE,main="Specificity Control II: Background on Signal",
-						las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+						las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,10),col="grey")
 	}   else   {
 		barplot2(SpecIIC[,2], col="red", names=SpecIIC$SAMPLE, las=2, ylim=c(0,50), main="Specificity Control II: Background on Signal", ylab="%")
@@ -366,7 +371,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
 	if (max(NPRatio.g[,2]) > 50)   { 
 		try(gap.barplot(NPRatio.g[,2], gap=c(51,55), col=rep("green",length(NPRatio.g[,2])), xaxlab=NPRatio.g$SAMPLE,
-						main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Green Channel",las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+						main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Green Channel",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,5),col="grey")
 	}   else   { 
 		barplot2(NPRatio.g[,2], col="green", names=NPRatio.g$SAMPLE, las=2, ylim=c(0,50), main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Green Channel", ylab="%")
@@ -375,7 +380,7 @@ getAssayControls <- function(ImportDataR,platform) {
 	
 	if (max(NPRatio.r[,2]) > 50)   { 
 		try(gap.barplot(NPRatio.r[,2], gap=c(51,55), col=rep("red",length(NPRatio.r[,2])), xaxlab=NPRatio.r$SAMPLE,
-						main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Red Channel",las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+						main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Red Channel",las=2,ylim=c(4,61), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
 		abline(h=seq(0,50,5),col="grey")
 	} else   {
 		barplot2(NPRatio.r[,2], col="red", names=NPRatio.r$SAMPLE, las=2, ylim=c(0,50), main="Non-Polymorphic Control: Background (AT) on Signal (GC) - Red Channel", ylab="%")
