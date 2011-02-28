@@ -69,7 +69,7 @@ where:
 \item \textbf{platform} is the type of Illumina Infinium BeadChip methylation assay. This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip). 
 \item \textbf{pval} is the p-value threshold number to define which samples keep for the normalization and the following analysis;
 \item \textbf{ClustMethod} is the distance measure to be used for the clustering. This must be one of "euclidean", "maximum", "manhattan", "canberra", "binary", "pearson", "correlation", "spearman" or "kendall";
-\item \textbf{ChrX} ia a logical value indicating whether the CpGs that belong to chromosome X should be deleted from normalization and the following analyses. The default is FALSE; (WARNING: until the annotation package for Hum450 will not be public, this feature only works with "Hum27");
+\item \textbf{ChrX} ia a logical value indicating whether the CpGs that belong to chromosome X should be deleted from normalization and the following analyses. The default is FALSE;
 \end{itemize}
 
 \setlength{\parskip}{25pt}
@@ -92,7 +92,7 @@ HumMeth27QCReport takes input three files from GenomeStudio plus an optional tex
 
 \setlength{\parskip}{2pt}
 
-* \textbf{BetaAverage table} (it is compulsory that the file name contains the word "Avg", case sensitive, and not the other reserved words)
+* \textbf{BetaAverage table} (it is compulsory that the file name contains the word "AvgBeta", case sensitive, and not the other reserved words)
 
 \setlength{\parskip}{2pt}
 

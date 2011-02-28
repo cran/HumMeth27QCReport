@@ -1,4 +1,4 @@
-#### HumMeth27QCReport v. 1.2.9
+ #### HumMeth27QCReport v. 1.2.10
 
 
 ###############################################
@@ -21,14 +21,17 @@ ImportData <- function(Dir) {
 	try(DiscarderII <- read.table(Discarder, header = F, sep = "\t"), silent=T)
 	try(DiscarderII <- as.character(DiscarderII$V1), silent=T)
 
-	samps$SampleLabel <-  samps$Sample.ID
+  Label <- samps$Sample.ID
+  if (is.null(Label)==T) { Label <- samps$SampleID }
+	samps$SampleLabel <-  Label
+  
 	colnames(samps)[1] <- "Index"
 	colnames(samps)[2] <- "SampleID"
 
 	nsample <- length(samps$Index)
 	samps2 <- samps[with(samps, order(Index)), ]
 	
-	pdf(file="Sample.pdf",paper="a4r", fonts="Times")
+	pdf(file="Sample.pdf",width=15,height=9, fonts="Times")
 	SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2)], samps2$SampleID[1:(length(samps2$SampleID)/2)],rep(" ",(length(samps2$SampleID)/2)), 
 							samps2$Index[((length(samps2$Index)/2)+1):length(samps2$Index)], samps2$SampleID[((length(samps2$SampleID)/2)+1):length(samps2$SampleID)])
 	colnames(SamplePDF)<-c("Index","SampleID","","Index","SampleID")
@@ -233,13 +236,25 @@ getAssayControls <- function(ImportDataR,platform) {
 	}	
 	
 # Bisulfite II
-	BisulfiteII <- t(control[control$ProbeID %in% BisulfiteCtrl_II$ID,seq(5,length(control),3)])
-	BisII <- apply(as.matrix(BisulfiteII), 1,mean)
+	BisulfiteIIR <- t(control[control$ProbeID %in% BisulfiteCtrl_II$ID,seq(5,length(control),3)])
+	BisIIR <- apply(as.matrix(BisulfiteIIR), 1,sum)
+	BisulfiteIIG <- t(control[control$ProbeID %in% BisulfiteCtrl_II$ID,seq(4,length(control),3)])
+	BisIIG <- apply(as.matrix(BisulfiteIIG), 1,sum)	
 	
-	BisIIC <- data.frame("SAMPLE"=samps$SampleID,"BisII"=BisII)
+	BisulfiteIIRatio <- (BisIIG / BisIIR)*100
+		
+	BisIIC <- data.frame("SAMPLE"=samps$SampleID,"BisII"=BisulfiteIIRatio)
 	BisIIC <- BisIIC[with(BisIIC, order(SAMPLE)), ]
 	
-	barplot2(BisIIC[,2], col="blue", names=BisIIC$SAMPLE, las=2, ylim=c(0,max(BisIIC[,2])+5000), main="Bisulfite II Control", plot.grid = TRUE, grid.lty = "solid",grid.col = "grey")
+  if (max(BisIIC[,2])>50)   { 
+		gap.barplot(BisIIC[,2], gap=c(51,55), col=rep("red",length(BisIIC[,2])), xaxlab=BisIIC$SAMPLE,
+					main="Bisulfite II Control: Background on Signal",	las=2, ylab="%", ytics=c(seq(0,50,10)),xlab="", horiz=F, ylim=c(0,65)) 
+		abline(h=seq(0,50,5),col="grey") 
+	}   else   {
+		barplot2(BisIIC[,2], col="red", names=BisIIC$SAMPLE, las=2, ylim=c(0,50), main="Bisulfite II Control: Background on Signal", ylab="%")
+		abline(h=seq(0,50,5),col="grey")
+	}
+	
 	}
 	
 	
@@ -292,13 +307,24 @@ getAssayControls <- function(ImportDataR,platform) {
 	if (platform == "Hum450")   {
 		
 # Specificity II	
-	SpecificityII <- t(control[control$ProbeID %in% SpecificityCtrl_II$ID,seq(5,length(control),3)])
-	SpecII <- apply(as.matrix(SpecificityII), 1,mean)
-	
-	SpecIIC <- data.frame("SAMPLE"=samps$SampleID,"SpecII"=SpecII)
+	SpecificityIIR <- t(control[control$ProbeID %in% SpecificityCtrl_II$ID,seq(5,length(control),3)])
+	SpecIIR <- apply(as.matrix(SpecificityIIR), 1,sum)
+  SpecificityIIG  <- t(control[control$ProbeID %in% SpecificityCtrl_II$ID,seq(4,length(control),3)])
+	SpecIIG <- apply(as.matrix(SpecificityIIG), 1,sum)
+  
+  SpecIIRatio <- (SpecIIG / SpecIIR)*100
+  
+	SpecIIC <- data.frame("SAMPLE"=samps$SampleID,"SpecII"=SpecIIRatio)
 	SpecIIC <- SpecIIC[with(SpecIIC, order(SAMPLE)), ]
 	
-	barplot2(SpecIIC[,2], col="blue", names=SpecIIC$SAMPLE, las=2, ylim=c(0,max(SpecIIC[,2])+5000), main="Specificity II Control", plot.grid = TRUE, grid.lty = "solid",grid.col = "grey")
+  if (max(SpecIIC[,2])>50)   { 
+		try(gap.barplot(SpecIIC[,2], gap=c(51,55), col=rep("red",length(SpecIIC[,2])), xaxlab=SpecIIC$SAMPLE,main="Specificity Control II: Background on Signal",
+						las=2,ylim=c(0,65), ylab="%", ytics=c(seq(0,50,10)),xlab=""), silent=T)
+		abline(h=seq(0,50,10),col="grey")
+	}   else   {
+		barplot2(SpecIIC[,2], col="red", names=SpecIIC$SAMPLE, las=2, ylim=c(0,50), main="Specificity Control II: Background on Signal", ylab="%")
+		abline(h=seq(0,50,5),col="grey")
+	  }
 	}
 
 	
@@ -473,7 +499,7 @@ QCCheck <- function(ImportDataR, pval)   {
 pca.samples.plot<-function(data,int.col=(1:ncol(data)),main.str="Principal Component Analysis")
 {
     data.nona<-na.delete(data[,int.col])
-    pca.res<-prcomp(t(data.nona),tol=0.1,na.action=na.omit)
+    pca.res<-prcomp(t(data.nona),tol=0.1,na.action=na.omit,center=T,scale=T)
     plot(pca.res$x,xlab="PC 1",ylab="PC 2",main=main.str,pch=".")
     text(pca.res$x,colnames(data[,int.col]),cex=0.7)
 }
@@ -493,10 +519,10 @@ cluster.samples.plot<-function(data,int.col=(1:ncol(data)),main.str="", method =
     dist.mat <- dist.mat[resclust$order,resclust$order]
 
     par(mfrow=c(2,1))
-        image(x=seq(1,nrow(num.data)),y=seq(1,nrow(num.data)),z=dist.mat,axes=FALSE,xlab="",ylab="",main=main.str)
-            axis(1,at=seq(1,nrow(num.data)),labels=rownames(dist.mat),las=2,cex.axis=0.5)
-            axis(2,at=seq(1,nrow(num.data)),labels=rownames(dist.mat),las=2,cex.axis=0.25)
-        plot(resclust,main="",xlab="",ylab="",cex=.6,axes=FALSE)
+    image(x=seq(1,nrow(num.data)),y=seq(1,nrow(num.data)),z=dist.mat,axes=FALSE,xlab="",ylab="",main=main.str)
+    axis(1,at=seq(1,nrow(num.data)),labels=rownames(dist.mat),las=2,cex.axis=0.5)
+    axis(2,at=seq(1,nrow(num.data)),labels=rownames(dist.mat),las=2,cex.axis=0.25)
+    plot(resclust,main="",xlab="",ylab="",cex=.6,axes=FALSE)
     par(mfrow=c(1,1))
 }
 
@@ -551,7 +577,7 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 	}
 	
 	pdf(file="ExplorativeAnalysis.pdf",width=15,height=9)
-	par(oma=c(1,1,1,1), mar=c(7.1,3.1,3.1,1.1))
+	par(oma=c(1,1,1,1), mar=c(7.1,4.1,3.1,1.1))
 	pca.samples.plot(lumiMethy.norm.f)
 	cluster.samples.plot(lumiMethy.norm.f,main="Hierarchical Clustering",method=ClustMethod)
 	dev.off()
@@ -593,8 +619,8 @@ HumMeth27QCReport <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   
 	
 ##### Explorative analysis
 	normVal <- NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod)
+	write.table(normVal,"NormalizedMvalues.txt",sep="\t",row.names=FALSE)
 	
-	write.table(normVal,"NormalizedMvalues.txt",sep="\t",row.names=FALSE)		
 	WriteXLS(c("dataVal", "infotab_DetectedGenes", "BadCpG_001_more5", "BadCpG_005_more5"), 
 			 ExcelFileName = "QC_Analysis.xls", SheetNames = c("Internal Control", "Detected genes", "BadCpG_001_more5%", "BadCpG_005_more5%"), 
 			 verbose = FALSE, Encoding = c("UTF-8", "latin1"), perl = "perl",BoldHeaderRow=T)

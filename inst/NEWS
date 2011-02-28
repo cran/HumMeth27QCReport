@@ -1,3 +1,7 @@
+version 1.2.10
+Modified the plots for Bisulfite II and Specificity II controls
+Date: 06/06/2011 
+-----------------------------------------------------
 version 1.2.9
 Added also for the platform 450k the function to discard the X-related CpGs from the analysis
 Date: 03/05/2011 
