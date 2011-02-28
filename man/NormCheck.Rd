@@ -8,12 +8,11 @@ Normalize the Beta Values and plot a PCA and a hierarchical Clustering of the sa
 }
 
 \usage{
-NormCheck(Dir, platform, pval, ChrX, ClustMethod)
+NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod)
 }
 
 \arguments{
-  \item{Dir}{A character string containing the location of the directory 
-    in which the input file are}
+  \item{ImportDataR}{the object that comes from ImportData function}
   \item{platform}{The type of Illumina Infinium BeadChip methylation assay. This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip). WARNING: currently only "Hum27" is supported}
   \item{pval}{A p-value threshold to define which sample keep for the normalization and the following analyses}
   \item{ClustMethod}{The distance measure to be used for the clustering. This must be one of "euclidean", "maximum", "manhattan", "canberra", "binary", "pearson", "correlation", "spearman" or "kendall"}
@@ -24,13 +23,16 @@ Creates:
 \itemize{
 \item  a PCA of normalized Beta values
 \item  a Cluster of normalized Beta values
-\item  an Excel file with the normalized M-values (see lumi package for details).
 }}
+\value{
+ data.frame with the normalized M-values and pdf file called ExplorativeAnalysis.pdf with all the plots. 
+ }
 \author{ F.M. Mancuso <francesco.mancuso@crg.es> }
 \examples{
 \dontrun{
 	Dir <- system.file("extdata/",package="HumMeth27QCReport")
-	NormCheck(Dir,pva=0.05,ClustMethod="euclidean",ChrX=F)
+	ImportDataR <- ImportData(Dir)
+	normMvalues <- NormCheck(ImportDataR,platform="Hum27",pval=0.05,ChrX=F,ClustMethod="euclidean")
 }
 }
 \keyword{ hplot }

@@ -5,17 +5,17 @@
 Creates all the histogram plots relative to the internal controls of the Illumina assay into pdf files.
 }
 \usage{
-getAssayControls(Dir, platform)
+getAssayControls(ImportDataR, platform)
 }
 \arguments{
-	\item{Dir}{A character string containing the location of the directory  in which the input file are.}
+	\item{ImportDataR}{the object that comes from ImportData function}
     \item{platform}{The type of Illumina Infinium BeadChip methylation assay. 
-		This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip). WARNING: currently only "Hum27" is supported}
+		This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip).}
 }
 
 
 \details{
- This creates all the histograms foreach internal control. The sample-independent controls let you evaluate the quality of specific
+ This function creates all the histograms foreach internal control. The sample-independent controls let you evaluate the quality of specific
 steps in the process flow; instead, the sample-dependent controls let you evaluate performance across samples. 
 
 \itemize{
@@ -57,12 +57,16 @@ This figure represents the ratio (%) between background and signal for Non-Polym
 The ratios should result in low signal, indicating that the performance of the assay was efficient.
 }
 }
+\value{
+data.frame with all the values of the internal controls and a pdf file called InternalControl.pdf with the barplots.  
+}
 \author{ F.M. Mancuso <francesco.mancuso@crg.es> }
 \examples{
 \dontrun{
 	Dir <- system.file("extdata/",package="HumMeth27QCReport")
 	platform <- "Hum27"
-	getAssayControls(Dir, platform)
+    ImportDataR <- ImportData(Dir)	
+	ControlResults <- getAssayControls(ImportDataR, platform)
 }
 }
 \keyword{ hplot }

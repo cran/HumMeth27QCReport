@@ -7,10 +7,10 @@ HumMeth27QCReport is a tool for quality control and preprocessing of Illuminas I
 The automated analysis pipeline comprises data import, normalization, quality diagnostics and data export. 
 }
 \usage{
-HumMeth27QCReport(Dir, platform, pval, ChrX, ClustMethod)
+HumMeth27QCReport(ImportDataR, platform, pval, ChrX, ClustMethod)
 }
 \arguments{
-  \item{Dir}{A character string containing the location of the directory in which the input file are}
+  \item{ImportDataR}{the object that comes from ImportData function}
   \item{platform}{The type of Illumina Infinium BeadChip methylation assay. This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip). WARNING: currently only "Hum27" is supported}
   \item{pval}{A p-value threshold number to define which sample keep for the normalization and the following analyses}
   \item{ClustMethod}{The distance measure to be used for the clustering. This must be one of "euclidean", "maximum", "manhattan", "canberra", "binary", "pearson", "correlation", "spearman" or "kendall"}
@@ -33,11 +33,15 @@ HumMeth27QCReport(Dir, platform, pval, ChrX, ClustMethod)
  
  More details are available in the vignette.  
 }
+\value{
+ data.frame with the normalized M-values and three pdf files (InternalControl.pdf, QualityCheck.pdf, ExplorativeAnalysis.pdf) with all the plots described previously.
+}
 \author{ F.M. Mancuso <francesco.mancuso@crg.es> }
 \examples{
 \dontrun{
 	Dir <- system.file("extdata/",package="HumMeth27QCReport")
-	HumMeth27QCReport(Dir,platform="Hum27",pval=0.05,ChrX=FALSE,"euclidean")
+    ImportDataR <- ImportData(Dir)
+	normMvalues <- HumMeth27QCReport(ImportDataR,platform="Hum27",pval=0.05,ChrX=FALSE,"euclidean")
 }
 }
 \keyword{ hplot }

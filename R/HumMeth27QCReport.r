@@ -1,4 +1,4 @@
-#### HumMeth27QCReport v. 1.2.0
+#### HumMeth27QCReport v. 1.2.9
 
 
 ###############################################
@@ -13,9 +13,10 @@ ImportData <- function(Dir) {
 	SamplesName <- WorkFiles[grep("Sample", WorkFiles)]
 	try(Discarder <- WorkFiles[grep("Discard", WorkFiles)], silent=T)
 
-	control <- read.table(Ctrls, header = TRUE, sep = "\t") 
-	AvBeta <- read.table(AverageBeta, header = TRUE, sep = "\t", flush=T) 
-	samps <- read.table(SamplesName, header = TRUE, sep = "\t")
+	control <- read.table(Ctrls, header = TRUE, sep = "\t", comment.char = "") 
+	AvBeta <- read.table(AverageBeta, header = TRUE, sep = "\t", flush=T, comment.char = "") 
+	
+	samps <- read.table(SamplesName, header = TRUE, sep = "\t", comment.char = "")
 	DiscarderII <- NULL
 	try(DiscarderII <- read.table(Discarder, header = F, sep = "\t"), silent=T)
 	try(DiscarderII <- as.character(DiscarderII$V1), silent=T)
@@ -43,7 +44,7 @@ ImportData <- function(Dir) {
 ###############  Internal Controls  ###############	
 
 
-getAssayControls <- function(Dir,platform) {
+getAssayControls <- function(ImportDataR,platform) {
 	if (platform == "Hum450")   {
 		Ctrl <- read.table(system.file("extdata/InternalCtrls450.txt",package="HumMeth27QCReport"),header=TRUE,as.is=TRUE,sep="\t")
 	} 
@@ -51,9 +52,8 @@ getAssayControls <- function(Dir,platform) {
 		Ctrl <- read.table(system.file("extdata/InternalCtrls27.txt",package="HumMeth27QCReport"),header=TRUE,as.is=TRUE,sep="\t")
 	}
 	
-	dataFiles <- ImportData(Dir)
-	control <- dataFiles$ctrl
-	samps <- dataFiles$samples
+	control <- ImportDataR$ctrl
+	samps <- ImportDataR$samples
 	
 	pdf(file="InternalControl.pdf",width=15,height=9)
 	par(oma=c(1,1,1,1), mar=c(10.1,4.1,3.1,1.1))
@@ -386,12 +386,16 @@ getAssayControls <- function(Dir,platform) {
 #################################################
 ###############   Quality Check   ###############
 
-QCCheck <- function(Dir, pval)   {
-	dataFiles <- ImportData(Dir)
-	samps <- dataFiles$samples
-	AverageBeta <- dataFiles$AverageBeta
-	Ctrls <- dataFiles$Ctrls
-	nsample <- dataFiles$nsample
+QCCheck <- function(ImportDataR, pval)   {
+
+	if (missing(pval) || is.null(pval)) {
+		pval <- 0.05
+	}
+
+	samps <- ImportDataR$samples
+	AverageBeta <- ImportDataR$AverageBeta
+	Ctrls <- ImportDataR$Ctrls
+	nsample <- ImportDataR$nsample
 
 	mldat <- methylumiR(AverageBeta, qcfile = Ctrls, sampleDescriptions = samps)
 	pvalSample_CpG <- as.data.frame(pvals(mldat))
@@ -500,8 +504,11 @@ cluster.samples.plot<-function(data,int.col=(1:ncol(data)),main.str="", method =
 #################################################
 ###############   Normalization   ###############
 
-NormCheck <- function(Dir, platform, pval, ChrX, ClustMethod)   {
+NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 	
+	if (missing(pval) || is.null(pval)) {
+		pval <- 0.05
+	}
 	if (missing(ClustMethod) || is.null(ClustMethod)) {
 		ClustMethod <- "euclidean"
 	}
@@ -509,22 +516,14 @@ NormCheck <- function(Dir, platform, pval, ChrX, ClustMethod)   {
 		ChrX <- "FALSE"
 	}
 	
-	dataFiles <- ImportData(Dir)
-	AverageBeta <- dataFiles$AverageBeta
-	Ctrl <- dataFiles$Ctrl
-	try(DiscarderII <- data.frame("ToDiscard"=dataFiles$DiscarderII), silent=F)
+	AverageBeta <- ImportDataR$AverageBeta
+	Ctrl <- ImportDataR$Ctrl
+	try(DiscarderII <- data.frame("ToDiscard"=ImportDataR$DiscarderII), silent=F)
 
 	if (platform == "Hum450")   {
-####################################             !!!!!!!!!!!! ACHTUNG !!!!!!!!!!!!
-####################################  !!!!!!!!!!!! db package not yet published !!!!!!!!!!!!
-#		require("IlluminaHumanMethylation450k.db")
-#		lumiMethy <- lumiMethyR(AverageBeta, lib="IlluminaHumanMethylation450k.db")
-#		x <- IlluminaHumanMethylation450kCHR
-#
-###############
-
-		lumiMethy <- lumiMethyR(AverageBeta)
-		lumiMethy.c.adj <- lumiMethy
+		lumiMethy <- lumiMethyR(AverageBeta, lib="IlluminaHumanMethylation450k.db")
+		x <- IlluminaHumanMethylation450kCHR
+		lumiMethy.c.adj <- lumiMethyC(lumiMethy)
 	} 
 	
 	if (platform == "Hum27")   { 
@@ -540,7 +539,7 @@ NormCheck <- function(Dir, platform, pval, ChrX, ClustMethod)   {
 	lumiMethy.norm <- lumiMethyN(lumiMethy.c.adj[,toKeep], method="quantile")   #### quantile normalization based on color balance adjusted data
 
 	if (ChrX == "TRUE" || ChrX == "T")   {
-		fData(lumiMethy.norm)$chrom <- as.factor(unlist(mget(featureNames(lumiMethy), x)))
+		fData(lumiMethy.norm)$chrom <- as.factor(unlist(mget(featureNames(lumiMethy), x, ifnotfound=NA)))
 		lumiMethy.norm.f <- data.frame(exprs(lumiMethy.norm), "Chr"= fData(lumiMethy.norm)$chrom)
 		lumiMethy.norm.f <- lumiMethy.norm.f[lumiMethy.norm.f$Chr != "X",]
 		lumiMethy.norm.f <- lumiMethy.norm.f[!is.na(lumiMethy.norm.f$Chr),]
@@ -548,7 +547,7 @@ NormCheck <- function(Dir, platform, pval, ChrX, ClustMethod)   {
 		lumiMethy.norm.f$Chr <- NULL
 	}   
 	if (ChrX == "FALSE" || ChrX == "F")   {
-		lumiMethy.norm.f <- data.frame(exprs(lumiMethy.norm))
+		lumiMethy.norm.f <- as.data.frame(exprs(lumiMethy.norm[toKeep,]))
 	}
 	
 	pdf(file="ExplorativeAnalysis.pdf",width=15,height=9)
@@ -569,13 +568,23 @@ NormCheck <- function(Dir, platform, pval, ChrX, ClustMethod)   {
 #######################################
 ###############   All   ###############
 
-HumMeth27QCReport <- function(Dir, platform, pval, ChrX, ClustMethod)   {
+HumMeth27QCReport <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
+
+	if (missing(pval) || is.null(pval)) {
+		pval <- 0.05
+	}
+	if (missing(ClustMethod) || is.null(ClustMethod)) {
+		ClustMethod <- "euclidean"
+	}
+	if (missing(ChrX) || is.null(ChrX)) {
+		ChrX <- "FALSE"
+	}
 
 ##### Internal controls
-	dataVal <- getAssayControls(Dir,platform)    
+	dataVal <- getAssayControls(ImportDataR,platform)    
 	
 ##### Quality controls
-	dataQC <- QCCheck(Dir, pval)
+	dataQC <- QCCheck(ImportDataR, pval)
 	infotab_DetectedGenes <- dataQC$Detection
 	BadCpG_001_more5 <- dataQC$BadCpG_001_more5
 	colnames(BadCpG_001_more5) <- c("CpG","Percentage")
@@ -583,10 +592,12 @@ HumMeth27QCReport <- function(Dir, platform, pval, ChrX, ClustMethod)   {
 	colnames(BadCpG_005_more5) <- c("CpG","Percentage")
 	
 ##### Explorative analysis
-	normVal <- NormCheck(Dir, platform, pval, ChrX, ClustMethod)
+	normVal <- NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod)
 	
 	write.table(normVal,"NormalizedMvalues.txt",sep="\t",row.names=FALSE)		
 	WriteXLS(c("dataVal", "infotab_DetectedGenes", "BadCpG_001_more5", "BadCpG_005_more5"), 
 			 ExcelFileName = "QC_Analysis.xls", SheetNames = c("Internal Control", "Detected genes", "BadCpG_001_more5%", "BadCpG_005_more5%"), 
 			 verbose = FALSE, Encoding = c("UTF-8", "latin1"), perl = "perl",BoldHeaderRow=T)
+	
+	return(normVal)
 }
