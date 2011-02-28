@@ -565,11 +565,11 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 		lumiMethy.norm.f <- data.frame(exprs(lumiMethy.norm), "Chr"= fData(lumiMethy.norm)$chrom)
 		lumiMethy.norm.f <- lumiMethy.norm.f[lumiMethy.norm.f$Chr != "X",]
 		lumiMethy.norm.f <- lumiMethy.norm.f[!is.na(lumiMethy.norm.f$Chr),]
-
 		lumiMethy.norm.f$Chr <- NULL
+		NormBetasVal <- lumiMethy.norm.f
 	}   
 	if (ChrX == "FALSE" || ChrX == "F")   {
-		lumiMethy.norm.f <- as.data.frame(exprs(lumiMethy.norm[toKeep,]))
+		NormBetasVal <- as.data.frame(exprs(lumiMethy.norm[toKeep,]))
 	}
 	
 	pdf(file="ExplorativeAnalysis.pdf",width=15,height=9)
@@ -578,7 +578,6 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 	cluster.samples.plot(lumiMethy.norm.f,main.str="Hierarchical Clustering",method=ClustMethod)
 	dev.off()
 	
-	NormBetasVal <- as.data.frame(exprs(lumiMethy.norm[toKeep,]))
 	lenNormBetasVal <- length(NormBetasVal)
 	NormBetasVal$TargetID <- rownames(NormBetasVal)
 	NormBetasVal <- NormBetasVal[,c((lenNormBetasVal+1),1:lenNormBetasVal)]
