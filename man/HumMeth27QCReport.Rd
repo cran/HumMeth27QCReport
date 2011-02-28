@@ -1,25 +1,24 @@
 \name{HumMeth27QCReport}
 \alias{HumMeth27QCReport}
-
 \docType{package}
-\title{ Generate a QC Report for Illuminas Infinium HumanMethylation27 BeadChip methylation assay}
+\title{ Generate a QC Report for Illumina Infinium BeadChip methylation assay}
 \description{
-HumMeth27QCReport is a tool for quality control and preprocessing of Illuminas Infinium HumanMethylation27 BeadChip methylation assay. 
+HumMeth27QCReport is a tool for quality control and preprocessing of Illuminas Infinium BeadChip methylation assay. 
 The automated analysis pipeline comprises data import, normalization, quality diagnostics and data export. 
 }
-
 \usage{
-HumMeth27QCReport(Dir)
+HumMeth27QCReport(Dir, platform, pval, ChrX, ClustMethod)
 }
-
 \arguments{
-  \item{Dir}{A character string containing the location of the directory 
-    in which the input file are}
+  \item{Dir}{A character string containing the location of the directory in which the input file are}
+  \item{platform}{The type of Illumina Infinium BeadChip methylation assay. This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip). WARNING: currently only "Hum27" is supported}
+  \item{pval}{A p-value threshold number to define which sample keep for the normalization and the following analyses}
+  \item{ClustMethod}{The distance measure to be used for the clustering. This must be one of "euclidean", "maximum", "manhattan", "canberra", "binary", "pearson", "correlation", "spearman" or "kendall"}
+  \item{ChrX}{Logical value indicating whether the CpGs that belongs to chromosome X should be deleted from normalization and the following analyses. The default is FALSE}
 }
-
 \details{
  A wide variety of tools from different packages are used, to produce pdfs with various statistics that should help determine whether there are data quality problems with the data.
- This package only works for Illumina Infinium HumanMethylation27 data and it requires a working Perl installation
+ This package only works for Illumina Infinium methylation data and it requires a working Perl installation
  Creates different plots to asses the quality of the samples:
  
 \itemize{
@@ -34,8 +33,12 @@ HumMeth27QCReport(Dir)
  
  More details are available in the vignette.  
 }
-
 \author{ F.M. Mancuso <francesco.mancuso@crg.es> }
-
+\examples{
+\dontrun{
+	Dir <- system.file("extdata/",package="HumMeth27QCReport")
+	HumMeth27QCReport(Dir,platform="Hum27",pval=0.05,ChrX=FALSE,"euclidean")
+}
+}
 \keyword{ hplot }
 \keyword{ manip }

@@ -1,20 +1,21 @@
 Package: HumMeth27QCReport
 Type: Package
 Title: HumMeth27QCReport: quality control and preprocessing of
-        Illumina's Infinium HumanMethylation27 BeadChip methylation
-        assay.
-Version: 1.1.1
-Date: 2010-10-05
-Author: F.M. Mancuso
+        Illumina's Infinium methylation assays.
+Version: 1.2.8
+Date: 2011-02-28
+Author: F.M. Mancuso, G. Roma
 Maintainer: F.M. Mancuso <francesco.mancuso@crg.es>
 Description: HumMeth27QCReport is a tool for quality control and
-        preprocessing of Illumina's Infinium HumanMethylation27
-        BeadChip methylation assay. The automated analysis pipeline
-        comprises data import, normalization, quality diagnostics and
-        data export.
-Depends: methylumi, lumi, amap, Hmisc, gplots, plotrix, WriteXLS, tcltk
+        preprocessing of Illumina's Infinium BeadChip methylation
+        assays. The automated analysis pipeline comprises data import,
+        normalization, quality diagnostics and data export.
+Depends: R (>= 2.12.0), methylumi, lumi,
+        IlluminaHumanMethylation27k.db,amap, Hmisc, gplots, plotrix,
+        WriteXLS,tcltk2
+Imports: AnnotationDbi (>= 0.0.89), Biobase (>= 1.15.29)
 License: GPL-2
 LazyLoad: yes
-Packaged: 2010-11-24 11:57:38 UTC; fmancuso
+Packaged: 2011-04-04 10:53:06 UTC; fmancuso
 Repository: CRAN
-Date/Publication: 2010-11-24 14:03:11
+Date/Publication: 2011-04-04 19:01:24

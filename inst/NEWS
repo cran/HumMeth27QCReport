@@ -1,0 +1,15 @@
+version 1.2.8
+Code revised; compatible with the new Illumina platform 450k; added new features; documentation revised
+Date: 04/04/2011 
+-----------------------------------------------------
+version 1.1.1
+Solved a bug in the DemoData
+Date: 24/11/2010 
+-----------------------------------------------------
+version 1.1
+Changed the normalisation method.
+Date: 22/11/2010 
+-----------------------------------------------------
+version 1.0.0
+First release. 
+Date: 04/11/2010

@@ -5,12 +5,12 @@
 Creates all the plots relatve to the quality of the samples.
 }
 \usage{
-QCCheck(Dir)
+QCCheck(Dir, pval)
 }
 \arguments{
-  \item{Dir}{A character string containing the location of the directory 
-    in which the input file are
-  }}
+  \item{Dir}{A character string containing the location of the directory in which the input file are }
+  \item{pval}{A p-value threshold number to define which sample keep for the normalization and the following analyses }
+}
 \details{
  Creates 3 different plots to asses the quality of the samples:	
 \itemize{ 
@@ -20,6 +20,11 @@ QCCheck(Dir)
 }}
 
 \author{ F.M. Mancuso <francesco.mancuso@crg.es> }
-
+\examples{
+\dontrun{
+	Dir <- system.file("extdata/",package="HumMeth27QCReport")
+	QCCheck(Dir,pval=0.05)
+}
+}
 \keyword{ hplot }
 \keyword{ manip }

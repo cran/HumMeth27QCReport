@@ -1,38 +1,41 @@
-%\VignetteIndexEntry{HumMeth27QCReport: Methods for Generating Illumina Infinium HumanMethylation27 BeadChip QC Reports}
+%\VignetteIndexEntry{HumMeth27QCReport: A Package to Generate QC Reports for Infinium Methylation Assay Data}
 %\VignettePackage{HumMeth27QCReport}
 
-\documentclass[12pt]{article}
+\documentclass[a4paper]{article}
+
+\usepackage{Sweave}
+\usepackage{fullpage}
 \usepackage{amsmath}
 \usepackage{hyperref}
-\usepackage[authoryear,round]{natbib}
-
-\textwidth=6.2in
-\textheight=8.5in
-%\parskip=.3cm
-\oddsidemargin=.1in
-\evensidemargin=.1in
-\headheight=-.3in
 
 \newcommand{\scscst}{\scriptscriptstyle}
 \newcommand{\scst}{\scriptstyle}
 
 
-\newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
 \newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rfunarg}[1]{{\textit{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
 
 
-\title{HumMeth27QCReport: A Package to Generate QC Reports for Infinium HumanMethylation27 BeadChip Methylation Assay Data}
-\author{Francesco M. Mancuso}
+\title{HumMeth27QCReport: A Package to Generate QC Reports for Infinium Methylation Assay Data}
+
+\author{Francesco M. Mancuso and Guglielmo Roma}
+\date{\today}
+
 \begin{document}
-\maketitle
-\tableofcontents
+
+\maketitle \tableofcontents %\newpage
+
 \section{Introduction}
 
-This document describes an R package for generating QC reports.  The goal of this project is to create a tool to allow users of Illumina Infinium HumanMethylation27 BeadChip Methylation Assay\footnote{\url{www.illumina.com/}} to quickly access the data quality of a batch of processed arrays.  
-The package makes use of the  \Rpackage{methylumi} package for reading files exported from BeadStudio software, generating intensity plots and normalizing Beta values.     
-Several new plots are generated and a printable pdf files are created.  
-To run properly and generate the summary Excel file, the script needs that a working versions of Perl is installed on your machine.
+This document describes an R package for generating QC reports.  The goal of this project is to create a tool to allow users of Illumina Infinium BeadChip Methylation Assay\footnote{\url{www.illumina.com/}} to quickly access the data quality of a batch of processed arrays.  
+HumMeth27QCReport works with both the two available Infinium platforms: the HumanMethylation27 BeadChip and the HumanMethylation450 BeadChip.
+The package makes use of different packages, as \Rpackage{methylumi} or \Rpackage{lumi}, for reading files exported from GenomeStudio software, generating intensity plots and normalizing Beta values.     
+Several new plots are generated and printable pdf files are created.  
+To run properly and generate the summary Excel file, the script needs that a working version of Perl is installed on your machine.
 
 \section{Usage}
 
@@ -42,42 +45,30 @@ After starting R, the package should be loaded using the following.
 library(HumMeth27QCReport)
 @
 
-This will load \Rpackage{HumMeth27QCReport} as well as the \Rpackage{methylumi}, \Rpackage{lumi}, \Rpackage{amap}, \Rpackage{Hmisc}, \Rpackage{gplots}, \Rpackage{plotrix}, \Rpackage{WriteXLS} and \Rpackage{tcltk} packages and their dependencies.
+This will load \Rpackage{HumMeth27QCReport} as well as the \Rpackage{methylumi}, \Rpackage{lumi}, \Rpackage{IlluminaHumanMethylation27k.db}, \Rpackage{amap}, \Rpackage{Hmisc}, \Rpackage{gplots}, \Rpackage{plotrix}, \Rpackage{WriteXLS} and \Rpackage{tcltk2} packages and their dependencies.
+
+To generate an example report simply use the method \Rfunction{HumMeth27QCReport} (here is reported an example for the Infinium HumanMethylation27 BeadChip platform)
 
 \begin{Sinput}
-R> HumMeth27QCReport(Dir)
-\end{Sinput}
+Dir <- system.file("extdata/",package="HumMeth27QCReport")
+HumMeth27QCReport(Dir,platform="Hum27",pval=0.03,ChrX=F,ClustMethod="euclidean")
+\end{Sinput} 
 
-Dir: character string containing the location of the directory in which the input file are.
+where:
+
+\begin{itemize}
+\item \textbf{Dir} is a character string containing the location of the directory in which the input file are;
+\item \textbf{platform} is the type of Illumina Infinium BeadChip methylation assay. This must be one of "Hum27" (Infinium HumanMethylation27 BeadChip) or "Hum450" (Infinium HumanMethylation450 BeadChip). 
+\item \textbf{pval} is the p-value threshold number to define which samples keep for the normalization and the following analysis;
+\item \textbf{ClustMethod} is the distance measure to be used for the clustering. This must be one of "euclidean", "maximum", "manhattan", "canberra", "binary", "pearson", "correlation", "spearman" or "kendall";
+\item \textbf{ChrX} ia a logical value indicating whether the CpGs that belongs to chromosome X should be deleted from normalization and the following analyses. The default is FALSE; (WARNING: until the annotation package for Hum450 will not be public, this feature only works with "Hum27");
+\end{itemize}
 
 \setlength{\parskip}{25pt}
 
-If desired the analysis can be split in three parts by a single function call$:$
+\section{Inputs files}
 
-\setlength{\parskip}{6pt}
-
-* \textbf{QCRep} creates all the histogram plots relative to the internal controls of the Illumina assay into pdf files.
-
-\begin{Sinput}
-R> QCRep(Dir)
-\end{Sinput}
-
-* \textbf{QCCheck} creates all the plots relatve to the quality of the samples.
-
-\begin{Sinput}
-R> QCCheck(Dir)
-\end{Sinput} 
- 
-* \textbf{NormCheck} normalize the Beta Values and plot a PCA and a hierarchical Clustering of the samples using the noralized data
-
-\begin{Sinput}
-R> NormCheck(Dir)
-\end{Sinput}
-
-
-\section{Inputs and Outputs files}
-
-HumMeth27QCReport takes in input the three files from BeadStudio plus an optional text file with the chip control samples to discard from the normalization step:
+HumMeth27QCReport takes in input three files from GenomeStudio plus an optional text file with the chip control samples to discard from the normalization step:
 
 \setlength{\parskip}{6pt}
 
@@ -95,9 +86,9 @@ HumMeth27QCReport takes in input the three files from BeadStudio plus an optiona
 
 * \textbf{Discard.txt} (compulsory name) 
 
-\setlength{\parskip}{10pt}
+\setlength{\parskip}{20pt}
 
-\textbf{Sample table} - Required columns from BeadStudio:
+\textbf{Sample table} - Required columns from GenomeStudio:
 \\- Index
 \\- Sample ID
 \\- Sample Group
@@ -120,9 +111,9 @@ HumMeth27QCReport takes in input the three files from BeadStudio plus an optiona
 \\- Sample\_Well
 \\- Sample\_Plate
 
-\setlength{\parskip}{10pt}
+\setlength{\parskip}{20pt}
 
-\textbf{Control table} - Required columns from BeadStudio (<Sn> = Sample Name):
+\textbf{Control table} - Required columns from GenomeStudio (<Sn> = Sample Name):
 \\- Index
 \\- TargetID
 \\- ProbeID
@@ -144,9 +135,9 @@ Required controls (rows):
 \\    * STAINING (4 rows)
 \\    * TARGET REMOVAL 
 
-\setlength{\parskip}{10pt}
+\setlength{\parskip}{20pt}
 
-\textbf{AverageBeta table} - Required columns from BeadStudio (<Sn> = Sample Name):
+\textbf{AverageBeta table} - Required columns from GenomeStudio (<Sn> = Sample Name):
 \\ - Index
 \\ - TargetID
 \\ - <Sn>.AVG\_Beta
@@ -161,29 +152,251 @@ Required controls (rows):
 \\ - ...
 \\ - SYMBOL
 
-\setlength{\parskip}{10pt}
+\setlength{\parskip}{40pt}
 
-\textbf{Discard.txt}
-Text file that contains the name of the samples (the same name present in the Sample table; one sample per row) you want to discard from normalization. i.e. sample controls to see if chip worked properly like un-methylated samples. 
+\textbf{Discard.txt} - Text file containing the name of the samples (the same name present in the Sample table; one sample per row) you want to discard from normalization. i.e. sample controls to see if chips worked properly like un-methylated samples. 
+\setlength{\parskip}{45pt}
 
-\setlength{\parskip}{25pt}
+\section{Figure Details}
+The analysis consist of three parts: Internal Controls, Quality Chech and Explorative Analysis. This section will describe the details of each part and the function call to generate the individual analysis. An expample of each part is shown in the following figures.
+\setlength{\parskip}{6pt}
 
-HumMeth27QCReport creates as output different plots (saved in pdf files) to asses the quality of the samples:
-\\ - a histogram foreach internal control.
-\\ - an Intensity Graph plot foreach sample recalling the "plotSampleIntensities" function of methylumi package.
-\\ - a histogram with the percentage of non dectected CPG (that is the CPGs tha have a detection p-value bigger than 0.05 or 0.01.
-\\ - a histogram with the average p-value for each sample.
-\\ - a PCA of normalized Beta values
-\\ - a Cluster of normalized Beta values
-\\As ulterior output, an Excel file is provided. It contains the normalized BetaValues, a summary of the Internal Controls and of the gene detection and different lists of non-detected CPGs.
+\subsection{Internal Controls}
+* \textbf{getAssayControls} creates histogram plots relative to the internal controls of the Illumina Infinium HumanMethylation BeadChip assay into a pdf file.
 
-\setlength{\parskip}{10pt}
+\begin{Sinput}
+R> Dir <- system.file("extdata/",package="HumMeth27QCReport")
+R> getAssayControls(Dir,platform)
+\end{Sinput}
 
+ 
+After data import, the method computes simple statistics and generates quality plots for monitoring the Illumina Infinium sample-independent and sample-dependent internal quality controls. 
+For each control, HumMeth27QCReport generates a plot representing the percentage of background on signal. 
+The sample-independent controls allow evaluating the quality of specific steps in the process flow and include:
+\begin{itemize}
+\item DNP staining control;
+\item Biotin staining control;
+\item Hybridization control;
+\item Target Removal control;
+\item Extension control in green channel;
+\item Extension control in red channel.
+\end{itemize}
+
+
+\begin{figure}[htbpp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_01}
+\caption{\label{f1} \textbf{Barplot of DNP staining control}. This figure represents the ratio (percentage) between background and signal for Staining control in the red channel (DNP). Staining controls are used to examine the efficiency of the staining step in both the red and green channels. Staining controls have dinitrophenyl (DNP) or biotin attached to the beads. 
+The ratios should result in low signal, indicating that the staining step was efficient.}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_02}
+\caption{\label{f2} \textbf{Barplot of Biotin staining control}. This figure represents the ratio (percentage) between background and signal for Staining control in the green channel (Biotin). These controls are independent of the hybridization and extension step. 
+The ratios should result in low signal, indicating that the staining step was efficient.}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_03}
+\caption{\label{f3} \textbf{Barplot of Hybridization control}. This figure represents the ratio (percentage) between background and signal for Hybridization controls in the green channel for three concentrations. The hybridization controls test the overall performance of the entire assay using synthetic targets instead of amplified DNA. These synthetic targets complement the sequence on the array perfectly, allowing the probe to extend on the synthetic target as template. The synthetic targets are present in the hybridization buffer at three levels, monitoring the response from high-concentration (5 pM), medium-concentration (1 pM), and low-concentration (0.2 pM) targets. 
+All bead type IDs should result in signal with various intensities, corresponding to the concentrations of the initial synthetic targets.
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_04}
+\caption{\label{f4} \textbf{Barplot of Target Removal control}. This figure represents the intensity value for Target removal controls in the green channel. Target removal controls test the efficiency of the stripping step after the extension reaction. The control oligos are extended using the probe sequence as template. This process generates labeled targets. The probe sequences are designed such that extension from the probe does not occur. 
+All target removal controls should result in low signal, indicating that the targets were removed efficiently after extension.  Values < 3400 have been detected (108 samples). There is not a range specified from Illumina, the value is based on previous experiments run in our facility. 
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_05}
+\caption{\label{f5} \textbf{Barplot of Extension control: green channel}. This figure represents the ratio (percentage) between background and signal for Extension control in the green channel (C,G). Extension controls test the extension efficiency of A, T, C, and G nucleotides from a hairpin probe, and are therefore sample-independent. 
+The ratios should result in low signal, indicating that the extension was efficient.
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_06}
+\caption{\label{f6} \textbf{Barplot of Extension control: red channel}. This figure represents the ratio (percentage) between background and signal for Extension control in the red channel (A,T). 
+The ratios should result in low signal, indicating that the extension was efficient.
+}
+\end{center}
+\end{figure}
+
+The sample-dependent controls allow evaluating performance across samples and include: 
+\begin{itemize}
+\item Bisulfite control in green channel;
+\item Specificity control (mismatch 1) in red channel;
+\item Specificity control (mismatch 2) in green channel;
+\item Negative control;
+\item Non-Polymorphic control (green channel); 
+\item Non-Polymorphic control (red channel).
+\end{itemize}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_07}
+\caption{\label{f7} \textbf{Barplot of Bisulfite control}. This figure represents the ratio (percentage) between background and signal for Bisultife conversion control. The Bisulfite conversion Control asses the efficiency of bisulfite conversion of the genomic DNA. The Infinium Methylation probes query a [C/T] polymorphism created by bisulfite conversion of two different Hind III sites [AAGCTT] in the genome. If the bisulfite conversion reaction was successful, the "C" (Converted) probes will match the converted sequence and get extended. If the sample has unconverted DNA, the "U" (Unconverted) probes will get extended. There are no underlying C bases in the primer landing sites, except for the query site itself. Performance of bisulfite conversion controls should only be monitored in the Green channel.
+The ratios should result in low signal, indicating that the Bisulfite conversion was efficient.
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_08}
+\caption{\label{f8} \textbf{Barplot of Specificity control (mismatch 1) in red channel}. This figure represents the ratio (percentage) between background (MM) and signal (PM) for Specificity controls in red channel. In the Infinium Methylation assay, the methylation status of a particular cytosine is carried out following bisulfite treatment of DNA by using query probes for unmethylated and methylated state of each CpG locus. In assay oligo design, the A/T match corresponds to the unmethylated status of the interrogated C, and G/C match corresponds to the methylated status of C. G/T mismatch controls check for non-specific detection of methylation signal over unmethylated background. Specificity controls are designed against non-polymorphic T sites. PM controls correspond to A/T perfect match and should give high signal. MM controls correspond to G/T mismatch and should give low signal.
+The ratios should result in low signal, indicating that the performance of the assay was efficient.
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_09}
+\caption{\label{f9} \textbf{Barplot of Specificity control (mismatch 2) in green channel}. This figure represents the ratio (percentage) between background (MM) and signal (PM) for Specificity controls in the green channel. PM controls correspond to A/T perfect match and should give high signal. MM controls correspond to G/T mismatch and should give low signal.
+The ratios should result in low signal, indicating that the performance of the assay was efficient.
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_10}
+\caption{\label{f10} \textbf{Barplot of Negative control}. This figure represents the intensity value for the Negative control. Negative control probes are randomly permutated sequences that should not hybridize to the DNA template. Negative controls are particularly important for methylation studies because of a decrease in sequence complexity after bisulfite conversion. The mean signal of these probes defines the system background. This is a comprehensive measurement of background, including signal resulting from cross-hybridization, as well as non-specific extension and imaging system background. 
+All target negative controls should result in low signal. Values < 2500 have been detected (108 samples). There is not a range specified from Illumina, the value is based on previous experiments run in our facility.
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_11}
+\caption{\label{f11} \textbf{Barplot for green channel of Non-Polymorphic control}. This figure represents the ratio (percentage) between background and signal for Non-Polymorphic control in the green channel. Non-polymorphic controls test the overall performance of the assay, from amplification to detection, by querying a particular base in a non-polymorphic region of the bisulfite genome. They let compare assay performance across different samples. One non-polymorphic control has been designed to query each of the four nucleotides (A, T, C and G). The target with the C base results from querying the opposite whole genome amplified strand generated from the converted strand.
+The ratios should result in low signal, indicating that the performance of the assay was efficient.
+}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{InternalControl_Page_12}
+\caption{\label{f12} \textbf{Barplot for red channel of Non-Polymorphic control}. This figure represents the ratio (percentage) between background and signal for Non-Polymorphic control in the red channel. 
+The ratios should result in low signal, indicating that the performance of the assay was efficient.
+}
+\end{center}
+\end{figure}
+
+In the case of 450k platform 3 more plots for sample-independent will be created:
+\begin{itemize}
+\item Bisulfite control in red channel: the same of the previous Bisulfite conversion but monitored in red channel;
+\item Bisulfite II control: these controls use Infinium II probe design and single base extension to monitor the
+ efficiency of bisulfite conversion. If the bisulfite conversion reaction was successful, the
+ "A" base will be incorporated and the probe will have intensity in the Red channel. If
+ the sample has unconverted DNA, the "G" base will be incorporated across the
+ unconverted cytosine, and the probe will have elevated signal in the Green channel.
+\item Specificity II control: these controls are designed to monitor extension specificity for Infinium II probes and
+ check for potential non-specific detection of methylation signal over unmethylated 
+background. Specificity II probes should incorporate the "A" base across the nonpolymorphic
+ T and have intensity in the Red channel. In case of non-specific 
+incorporation of the "G" base, the probe will have elevated signal in the Green channel.
+\end{itemize}
+
+\subsection{Quality Check}
+
+* \textbf{QCCheck} creates all the plots relative to the quality of the samples.
+
+\begin{Sinput}
+R> QCCheck(Dir, pval)
+\end{Sinput} 
+ 
+HumMeth27QCReport, moreover, generates plots to monitor eventual dye biases in not-normalized data. 
+To this purpose, it makes use of the function plotSampleIntensities of the methylumi package to plot the intensities distribution for each sample. 
+Additionally, HumMeth27QCReport plots the percentage of those CpGs that could not be detected at two different p-value cut-offs (0.01 and 0.05). This plot gives an immediate overview of the global CpG coverage. 
+As further control, HumMeth27QCReport also evaluates the average detection p-value of each sample, and removes those samples with average pvalue cut-off higher than a threshold choosen by the user. 
+
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{QualityCheck_Page_1}
+\caption{\label{f13} depending on the number of samples there could be more than one figure. For each sample the \textbf{intensity at high and low betas} is showed. The intensities as output by the GenomeStudio software often show a considerable amount of dye bias. This is a graphical example of this dye bias. In short, for each of the Cy3 and Cy5 channels, a cutoff in beta is used to calculate which Cy3 and Cy5 values should be plotted at high-methylation and low-methylation status. Any offset between Cy3 and Cy5 when plotted in this way likely represents dye bias and will lead to biases in the estimate of beta. }
+\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{QualityCheck_Page_2}
+\caption{\label{f14} boxplot of the \textbf{percentage of non-detected genes} per each sample. Two different thresholds of detection p-value (0.05 and 0.01, blue and red bars, respectively) were set to calculate the percentage. }
+\end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=1.1\textwidth]{QualityCheck_Page_3}
+\caption{\label{f15} quick evaluation of the detection p-values. The boxplots show the \textbf{average p-value} for each sample; the red dotted line is the treshold defined by the user to select the samples for the following analysis. }
+\end{center}
+\end{figure}
+
+
+
+\subsection{Explorative Analysis}
+
+* \textbf{NormCheck} normalize the Beta Values and plot a PCA and a hierarchical Clustering of the samples using the normalized data
+
+\begin{Sinput}
+R> NormCheck(Dir, platform, pval, ChrX, ClustMethod)
+\end{Sinput}
+
+Principal Component Analysis (PCA) and hierarchical clustering are computed to assess sample similarities using normalized data.
+The users have the possibility to choose the distance method to use in the clustering calculation.
+As ulterior output, an Excel file is provided. It contains the normalized M-value, a summary of the Internal Controls and of the gene detection and different lists of non-detected CPGs.
 The methods to normalize the data are described further in the \Rpackage{lumi} package documentation.
 
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{ExplorativeAnalysis_Page_1}
+\caption{\label{f16} \textbf{Principal Component Analysis (PCA)} on  filtered and normalized data. }
+\end{center}
+\end{figure}
 
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{ExplorativeAnalysis_Page_2}
+\caption{\label{f17} \textbf{Hierarchical Clustering} on  filtered and normalized data. The distance method is defined by the user. }
+\end{center}
+\end{figure}
 
-\section{Acknowledgments}
-I would like to thanks Manuela Hummel for the technical support.
+\section{SessionInfo}
 
-\end{document}
+<<results=tex>>=
+toLatex(sessionInfo())
+@ 
+
+\section{References}
+\begin{itemize}
+\item Du P., Kibbe, W.A., Lin S.M., (2008) 'lumi: a pipeline for processing Illumina microarray', Bioinformatics 24(13):1547-1548
+\item Caussinus H., Fekri M.,Hakam S., Ruiz-Gazen A., (2003) 'A monitoring display of multivariate outliers', Computational Statistics and Data Analysis 44:237-252
+\end{itemize}
+\end{document} 
