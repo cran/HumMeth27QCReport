@@ -8,7 +8,7 @@ Normalize the Beta Values and plot a PCA and a hierarchical Clustering of the sa
 }
 
 \usage{
-NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod)
+NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod, normMethod)
 }
 
 \arguments{
@@ -17,6 +17,7 @@ NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod)
   \item{pval}{A p-value threshold to define which sample keep for the normalization and the following analyses}
   \item{ClustMethod}{The distance measure to be used for the clustering. This must be one of "euclidean", "maximum", "manhattan", "canberra", "binary", "pearson", "correlation", "spearman" or "kendall"}
   \item{ChrX}{Logical value indicating whether the CpGs that belongs to chromosome X should be deleted from normalization and the following analyses. The default is FALSE}
+  \item{normMethod}{Commonly either "quantile" or "ssn". Determines the normalization method. See documentation for lumiMethyN() function in lumi package. Default is "quantile"}
 }
 \details{
 Creates:
@@ -27,12 +28,12 @@ Creates:
 \value{
  data.frame with the normalized M-values and pdf file called ExplorativeAnalysis.pdf with all the plots. 
  }
-\author{ F.M. Mancuso <francesco.mancuso@crg.es> }
+\author{ F.M. Mancuso <francesco.mancuso@crg.es>, N. Oien <Niles.Oien@colorado.edu> }
 \examples{
 \dontrun{
 	Dir <- system.file("extdata/",package="HumMeth27QCReport")
 	ImportDataR <- ImportData(Dir)
-	normMvalues <- NormCheck(ImportDataR,platform="Hum27",pval=0.05,ChrX=F,ClustMethod="euclidean")
+	normMvalues <- NormCheck(ImportDataR,platform="Hum27",pval=0.05,ChrX=F,ClustMethod="euclidean",normMethod="quantile")
 }
 }
 \keyword{ hplot }

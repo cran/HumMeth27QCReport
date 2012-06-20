@@ -7,7 +7,7 @@ HumMeth27QCReport is a tool for quality control and preprocessing of Illuminas I
 The automated analysis pipeline comprises data import, normalization, quality diagnostics and data export. 
 }
 \usage{
-HumMeth27QCReport(ImportDataR, platform, pval, ChrX, ClustMethod)
+HumMeth27QCReport(ImportDataR, platform, pval, ChrX, ClustMethod, quoteOutput, normMethod)
 }
 \arguments{
   \item{ImportDataR}{the object that comes from ImportData function}
@@ -15,6 +15,8 @@ HumMeth27QCReport(ImportDataR, platform, pval, ChrX, ClustMethod)
   \item{pval}{A p-value threshold number to define which sample keep for the normalization and the following analyses}
   \item{ClustMethod}{The distance measure to be used for the clustering. This must be one of "euclidean", "maximum", "manhattan", "canberra", "binary", "pearson", "correlation", "spearman" or "kendall"}
   \item{ChrX}{Logical value indicating whether the CpGs that belongs to chromosome X should be deleted from normalization and the following analyses. The default is FALSE}
+  \item{quoteOutput}{Logical value determining if non-numeric items in the output file of normalized data should be in quotes. Default is TRUE}
+  \item{normMethod}{Commonly either "quantile" or "ssn". Determines the normalization method. See documentation for lumiMethyN() function in lumi package. Default is "quantile"}
 }
 \details{
  A wide variety of tools from different packages are used, to produce pdfs with various statistics that should help determine whether there are data quality problems with the data.
@@ -41,7 +43,7 @@ HumMeth27QCReport(ImportDataR, platform, pval, ChrX, ClustMethod)
 \dontrun{
 	Dir <- system.file("extdata/",package="HumMeth27QCReport")
     ImportDataR <- ImportData(Dir)
-	normMvalues <- HumMeth27QCReport(ImportDataR,platform="Hum27",pval=0.05,ChrX=FALSE,"euclidean")
+	normMvalues <- HumMeth27QCReport(ImportDataR, platform="Hum27", pval=0.05, ChrX=FALSE, ClustMethod="euclidean", quoteOutput=FALSE, normMethod="quantile")
 }
 }
 \keyword{ hplot }

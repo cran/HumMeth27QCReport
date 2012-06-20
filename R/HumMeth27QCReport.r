@@ -1,5 +1,71 @@
- #### HumMeth27QCReport v. 1.2.12
+ #### HumMeth27QCReport v. 1.2.15
 
+
+
+###############################################
+##  Get the separator character for a file ####
+getFileSepChar <- function(File) {
+
+# Init the return value
+  sepChar <- NULL
+
+# Open the file, return if this fails.
+  inFile <- file(File, "r")
+  if (!(isOpen(inFile))){
+      return(sepChar)
+  }
+
+# List the possible separators we might consider. The order is important, if two
+# separator characters occur with equal frequency then the one listed first will be
+# used.
+  possibleSeps=c(",", "\t", " ", ";", ":")
+
+# Initialize a vector of counts for each possible separator
+  possibleSepCounts=c( 0, 0, 0, 0, 0)
+
+# Look at the first 10 lines after the header line (arbitrary decision to do that)
+  for (lineNum in 1:11){
+    if(length(input <- readLines(inFile, n=1)) > 0){
+      if (lineNum > 1){ # Skip the first line as it is a header
+	ml=strsplit(input, character(0))
+	lc <- ml[[1]]
+
+# For each char in the line, go through our list of possible separator characters, increment
+# the count for that possible separator if the char in the line matches the possible separator.
+	maxLen=length(lc)
+	if (maxLen > 8192) maxLen=8192
+	for (i in 1:maxLen){
+	  for (j in 1:length(possibleSeps)){
+	    if (lc[i] == possibleSeps[j]){
+	      possibleSepCounts[j] <- possibleSepCounts[j] + 1
+	      break
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+# Close the input file.
+  close(inFile)
+
+# Find the separator char that has the maximum count.
+  maxIndex <- -1 
+  maxCount <- 0
+  for (j in 1:length(possibleSeps)){
+    if (possibleSepCounts[j] > maxCount){
+      maxCount <- possibleSepCounts[j]
+      maxIndex <- j
+    }
+  }
+
+  if (maxIndex > 0){
+    sepChar <- possibleSeps[maxIndex]
+  }
+
+  return(sepChar)
+
+}
 
 ###############################################
 ###############   Import data   ###############
@@ -30,15 +96,15 @@ ImportData <- function(Dir) {
 
 	nsample <- length(samps$Index)
 	samps2 <- samps[with(samps, order(Index)), ]
+
 	
   pdf(file="Sample.pdf",width=15,height=9, fonts="Times")  
-  if((nsample %% 2 == 0) ==F) {
-    SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2+1)], as.character(samps2$SampleID[1:(length(samps2$SampleID)/2+1)]), rep(" ",(length(samps2$SampleID)/2)+1), c(round((length(samps2$Index)/2)+1):(length(samps2$Index)),""), c(as.character(samps2$SampleID[((round(length(samps2$SampleID)/2+1))):length(samps2$SampleID)]),""))
+  if((nsample %% 2 == 0) ==F) { # Odd number of samples
+    SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2+1)], as.character(samps2$SampleID[1:(length(samps2$SampleID)/2+1)]), rep(" ",(length(samps2$SampleID)/2)+1), c(samps2$Index[ceil((length(samps2$Index)/2)+1):(length(samps2$Index))],""), c(as.character(samps2$SampleID[((ceil(length(samps2$SampleID)/2+1))):length(samps2$SampleID)]),""))
     colnames(SamplePDF)<-c("Index","SampleID","","Index","SampleID")
-    }
-  if ((nsample %% 2 == 0) ==T) {
-	  SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2)], samps2$SampleID[1:(length(samps2$SampleID)/2)], rep(" ",(length(samps2$SampleID)/2)), samps2$Index[((length(samps2$Index)/2)+1):length(samps2$Index)], samps2$SampleID[((length(samps2$SampleID)/2)+1):length(samps2$SampleID)])
-	colnames(SamplePDF)<-c("Index","SampleID","","Index","SampleID")
+  } else { # Even number of samples
+    SamplePDF <- data.frame(samps2$Index[1:(length(samps2$Index)/2)], samps2$SampleID[1:(length(samps2$SampleID)/2)], rep(" ",(length(samps2$SampleID)/2)), samps2$Index[((length(samps2$Index)/2)+1):length(samps2$Index)], samps2$SampleID[((length(samps2$SampleID)/2)+1):length(samps2$SampleID)])
+    colnames(SamplePDF)<-c("Index","SampleID","","Index","SampleID")
   } 
  
 	textplot(SamplePDF, halign="center", valign="center", show.rownames = F)
@@ -414,7 +480,7 @@ QCCheck <- function(ImportDataR, pval)   {
 	Ctrls <- ImportDataR$Ctrls
 	nsample <- ImportDataR$nsample
 
-	mldat <- methylumiR(AverageBeta, qcfile = Ctrls, sampleDescriptions = samps)
+	mldat <- methylumiR(AverageBeta, qcfile = Ctrls, sampleDescriptions = samps, sep=getFileSepChar(AverageBeta))
 	pvalSample_CpG <- as.data.frame(pvals(mldat))
 	
 	pdf(file="QualityCheck.pdf",width=15,height=9)
@@ -526,7 +592,7 @@ cluster.samples.plot<-function(data,int.col=(1:ncol(data)), main.str="", method 
 #################################################
 ###############   Normalization   ###############
 
-NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
+NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod, normMethod)   {
 	
 	if (missing(pval) || is.null(pval)) {
 		pval <- 0.05
@@ -537,19 +603,23 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 	if (missing(ChrX) || is.null(ChrX)) {
 		ChrX <- "FALSE"
 	}
-	
+        if (missing(normMethod) || is.null(normMethod)) {
+                ChrX <- "quantile"
+        }
+
+
 	AverageBeta <- ImportDataR$AverageBeta
 	Ctrl <- ImportDataR$Ctrl
 	try(DiscarderII <- data.frame("ToDiscard"=ImportDataR$DiscarderII), silent=F)
 
 	if (platform == "Hum450")   {
-		lumiMethy <- lumiMethyR(AverageBeta, lib="IlluminaHumanMethylation450k.db")
+		lumiMethy <- lumiMethyR(AverageBeta, lib="IlluminaHumanMethylation450k.db", sep=getFileSepChar(AverageBeta))
 		x <- IlluminaHumanMethylation450kCHR
 		lumiMethy.c.adj <- lumiMethyC(lumiMethy)
 	} 
 	
 	if (platform == "Hum27")   { 
-		lumiMethy <- lumiMethyR(AverageBeta, lib="IlluminaHumanMethylation27k.db")
+		lumiMethy <- lumiMethyR(AverageBeta, lib="IlluminaHumanMethylation27k.db", sep=getFileSepChar(AverageBeta))
 		x <- IlluminaHumanMethylation27kCHR
 		lumiMethy.c.adj <- lumiMethyC(lumiMethy)  #### color balance adjustment
 	}
@@ -557,8 +627,20 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 	avgPval <- colMeans(detection(lumiMethy.c.adj),na.rm = T)
 	toKeep <- (avgPval < pval)
 	try(toKeep[as.character(DiscarderII$ToDiscard)] <- FALSE, silent=T)
-	
-	lumiMethy.norm <- lumiMethyN(lumiMethy.c.adj[,toKeep], method="quantile")   #### quantile normalization based on color balance adjusted data
+
+# Do plot of intesity prior to normalization
+	pdf(file="intensityPreNorm.pdf",width=15,height=9)
+        par(oma=c(1,1,1,1), mar=c(7.1,4.1,3.1,1.1))
+	plotDensity(estimateIntensity(lumiMethy.c.adj[,toKeep]), main="Pre normalization intensities")
+	dev.off()
+
+	lumiMethy.norm <- lumiMethyN(lumiMethy.c.adj[,toKeep], method=normMethod)   #### Normalization based on color balance adjusted data
+
+# Plot of intesity post normalization
+        pdf(file="intensityPostNorm.pdf",width=15,height=9)
+        par(oma=c(1,1,1,1), mar=c(7.1,4.1,3.1,1.1))
+        plotDensity(estimateIntensity(lumiMethy.norm), main="Post normalization intensities")
+        dev.off()
 
 	if (ChrX == "TRUE" || ChrX == "T")   {
 		fData(lumiMethy.norm)$chrom <- as.factor(unlist(mget(featureNames(lumiMethy), x, ifnotfound=NA)))
@@ -574,8 +656,8 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 	
 	pdf(file="ExplorativeAnalysis.pdf",width=15,height=9)
 	par(oma=c(1,1,1,1), mar=c(7.1,4.1,3.1,1.1))
-	pca.samples.plot(lumiMethy.norm.f)
-	cluster.samples.plot(lumiMethy.norm.f,main.str="Hierarchical Clustering",method=ClustMethod)
+	pca.samples.plot(NormBetasVal)
+	cluster.samples.plot(NormBetasVal,main.str="Hierarchical Clustering",method=ClustMethod)
 	dev.off()
 	
 	lenNormBetasVal <- length(NormBetasVal)
@@ -586,10 +668,14 @@ NormCheck <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
 }
 
 
+
 #######################################
 ###############   All   ###############
 
-HumMeth27QCReport <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   {
+HumMeth27QCReport <- function(ImportDataR, platform, pval, ChrX, ClustMethod, quoteOutput, normMethod)   {
+
+	options(warn=1)
+	options(showNCalls=400)
 
 	if (missing(pval) || is.null(pval)) {
 		pval <- 0.05
@@ -600,6 +686,13 @@ HumMeth27QCReport <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   
 	if (missing(ChrX) || is.null(ChrX)) {
 		ChrX <- "FALSE"
 	}
+	if (missing(quoteOutput) || is.null(quoteOutput)){
+		quoteOutput <- TRUE
+	}
+        if (missing(normMethod) || is.null(normMethod)){
+                normMethod <- "quantile"
+        }
+
 
 ##### Internal controls
 	dataVal <- getAssayControls(ImportDataR,platform)    
@@ -613,8 +706,8 @@ HumMeth27QCReport <- function(ImportDataR, platform, pval, ChrX, ClustMethod)   
 	colnames(BadCpG_005_more5) <- c("CpG","Percentage")
 	
 ##### Explorative analysis
-	normVal <- NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod)
-	write.table(normVal,"NormalizedMvalues.txt",sep="\t",row.names=FALSE)
+	normVal <- NormCheck(ImportDataR, platform, pval, ChrX, ClustMethod, normMethod)
+	write.table(normVal,"NormalizedMvalues.txt",sep="\t",row.names=FALSE,quote=quoteOutput)
 	
 	WriteXLS(c("dataVal", "infotab_DetectedGenes", "BadCpG_001_more5", "BadCpG_005_more5"), 
 			 ExcelFileName = "QC_Analysis.xls", SheetNames = c("Internal Control", "Detected genes", "BadCpG_001_more5%", "BadCpG_005_more5%"), 

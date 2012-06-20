@@ -10,6 +10,6 @@ import(gplots)
 import(WriteXLS)
 import(tcltk2)
 
-export(ImportData,HumMeth27QCReport,NormCheck,QCCheck,getAssayControls)
+export(getFileSepChar,ImportData,HumMeth27QCReport,NormCheck,QCCheck,getAssayControls)
 exportMethods("betas","pvals","exprs","hist","boxplot","pairs","[",
               "pvals<-","betas<-","corplot", "summary")

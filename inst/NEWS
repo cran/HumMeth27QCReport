@@ -1,3 +1,7 @@
+version 1.2.13
+Added function to get separator character from a file, option to not use quotes in output file, option as to which normalization method to use, new intesity plots, fixed pronlem with odd number of samples.
+Date: 20/06/2012
+-----------------------------------------------------
 version 1.2.12
 Solved different issues: odd samples, graph color in QCCheck
 Date: 01/11/2011 
